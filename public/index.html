@@ -74,7 +74,10 @@
       letter-spacing: -0.025em;
       margin-bottom: 16px;
     }
-    h1 em { font-style: normal; color: var(--accent); }
+    h1 em { font-style: normal; color: var(--accent); white-space: nowrap; }
+    @media (max-width: 480px) {
+      h1 { font-size: clamp(22px, 8vw, 32px); }
+    }
     .hero-sub {
       font-size: 15px;
       color: var(--muted);
@@ -460,30 +463,56 @@
       font-family: 'DM Sans', sans-serif;
     }
     .use-names-btn:hover { background: var(--libre-bg); }
-  </style>
-</head>
+    .lang-switch {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+    }
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 2px 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      transition: color 0.15s;
+    }
+    .lang-btn.active { color: var(--accent); font-weight: 500; }
+    .lang-btn:hover:not(.active) { color: var(--text); }
+
 <body>
 <div class="page">
 
   <nav class="nav">
     <div class="logo"><div class="logo-dot"></div>BingeNaming</div>
-    <div class="nav-badge">100% gratuit · sans compte</div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="lang-switch">
+        <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">FR</button>
+        <span style="color:var(--border2)">|</span>
+        <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+      </div>
+      <div class="nav-badge" data-i18n="badge">100% gratuit · sans compte</div>
+    </div>
   </nav>
 
   <div class="hero">
-    <div class="hero-kicker">Vérification de noms de domaine en lot</div>
-    <h1>Vérifiez la dispo de <em>200 noms</em><br>de domaine d'un seul coup !</h1>
-    <p class="hero-sub">Collez votre liste ou laissez l'IA en générer pour vous. Seuls les noms disponibles s'affichent — avec un lien direct pour les enregistrer.</p>
+    <div class="hero-kicker" data-i18n="kicker">Vérification de noms de domaine en lot</div>
+    <h1 data-i18n="h1">Vérifiez la dispo de <em>200 noms</em><br>de domaine d'un seul coup !</h1>
+    <p class="hero-sub" data-i18n="sub">Collez votre liste ou laissez l'IA en générer pour vous. Seuls les noms disponibles s'affichent — avec un lien direct pour les enregistrer.</p>
   </div>
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab active" id="tab-manual" onclick="switchTab('manual')">Vérifier ma liste</button>
-    <button class="tab" id="tab-ai" onclick="switchTab('ai')">Générer avec l'IA</button>
+    <button class="tab active" id="tab-manual" onclick="switchTab('manual')" data-i18n="tab_manual">Vérifier ma liste</button>
+    <button class="tab" id="tab-ai" onclick="switchTab('ai')" data-i18n="tab_ai">Générer avec l'IA</button>
   </div>
 
   <!-- EXTENSIONS -->
-  <div class="slabel">Extensions à vérifier</div>
+  <div class="slabel" data-i18n="ext_label">Extensions à vérifier</div>
   <div class="ext-grid" id="extGrid">
     <div class="ext-btn active" data-ext=".com">.com</div>
     <div class="ext-btn" data-ext=".fr">.fr</div>
@@ -498,20 +527,20 @@
   <!-- PANEL MANUAL -->
   <div id="panel-manual">
     <div class="card">
-      <div class="slabel" style="margin-bottom:10px">Vos noms — un par ligne (200 max)</div>
+      <div class="slabel" style="margin-bottom:10px" data-i18n="names_label">Vos noms — un par ligne (200 max)</div>
       <textarea id="domains" placeholder="metanoia&#10;tropos&#10;dunamis&#10;pragma&#10;tekton&#10;ergone" oninput="updateCount()"></textarea>
       <div class="limit-bar">
-        <button class="btn-sec" style="font-size:12px; padding:4px 12px;" onclick="document.getElementById('domains').value=''; updateCount();">Vider la liste</button>
+        <button class="btn-sec" style="font-size:12px; padding:4px 12px;" onclick="document.getElementById('domains').value=''; updateCount();" data-i18n="clear_list">Vider la liste</button>
         <span><span id="name-count" class="count-num">0</span> / 200</span>
       </div>
       <div class="actions">
-        <button class="btn-run" id="checkBtn" onclick="checkAll()">Lancer la vérification</button>
-        <button class="btn-sec" onclick="clearResults()">Effacer les résultats</button>
+        <button class="btn-run" id="checkBtn" onclick="checkAll()" data-i18n="check_btn">Lancer la vérification</button>
+        <button class="btn-sec" onclick="clearResults()" data-i18n="clear_results">Effacer les résultats</button>
         <span id="progress"></span>
       </div>
       <div class="progress-wrap" id="progressWrap">
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
-        <div class="progress-label"><span id="progressText">Vérification en cours…</span><span id="progressPct">0%</span></div>
+        <div class="progress-label"><span id="progressText" data-i18n="checking">Vérification en cours…</span><span id="progressPct">0%</span></div>
       </div>
     </div>
   </div>
@@ -519,22 +548,22 @@
   <!-- PANEL AI -->
   <div id="panel-ai" style="display:none">
     <div class="card">
-      <div class="slabel" style="margin-bottom:10px">Décrivez votre activité en quelques mots</div>
-      <input type="text" id="aiDesc" placeholder="ex: cabinet de conseil en transformation des organisations, outils digitaux pour managers" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:11px 14px; font-family:'DM Mono',monospace; font-size:13px; color:var(--text); outline:none;" />
+      <div class="slabel" style="margin-bottom:10px" data-i18n="ai_desc_label">Décrivez votre activité en quelques mots</div>
+      <input type="text" id="aiDesc" data-i18n-placeholder="ai_placeholder" placeholder="ex: cabinet de conseil en transformation des organisations, outils digitaux pour managers" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:11px 14px; font-family:'DM Mono',monospace; font-size:13px; color:var(--text); outline:none;" />
 
-      <div style="margin-top:16px" class="slabel">Univers sémantique souhaité</div>
+      <div style="margin-top:16px" class="slabel" data-i18n="universe_label">Univers sémantique souhaité</div>
       <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;" id="aiOptions">
-        <div class="ext-btn active" data-val="cognition & attention">Cognition & attention</div>
-        <div class="ext-btn active" data-val="mouvement & transformation">Mouvement & transformation</div>
-        <div class="ext-btn" data-val="construction & outils">Construction & outils</div>
-        <div class="ext-btn" data-val="pédagogie & transmission">Pédagogie & transmission</div>
-        <div class="ext-btn" data-val="technologie & systèmes">Technologie & systèmes</div>
-        <div class="ext-btn" data-val="latin & grec">Latin & grec</div>
-        <div class="ext-btn" data-val="expression courte">Expression courte</div>
+        <div class="ext-btn active" data-val="cognition & attention" data-i18n-val-fr="cognition & attention" data-i18n-val-en="cognition & attention">Cognition & attention</div>
+        <div class="ext-btn active" data-val="mouvement & transformation" data-i18n-val-fr="mouvement & transformation" data-i18n-val-en="movement & transformation">Mouvement & transformation</div>
+        <div class="ext-btn" data-val="construction & outils" data-i18n-val-fr="construction & outils" data-i18n-val-en="construction & tools">Construction & outils</div>
+        <div class="ext-btn" data-val="pédagogie & transmission" data-i18n-val-fr="pédagogie & transmission" data-i18n-val-en="pedagogy & learning">Pédagogie & transmission</div>
+        <div class="ext-btn" data-val="technologie & systèmes" data-i18n-val-fr="technologie & systèmes" data-i18n-val-en="technology & systems">Technologie & systèmes</div>
+        <div class="ext-btn" data-val="latin & grec" data-i18n-val-fr="latin & grec" data-i18n-val-en="latin & greek">Latin & grec</div>
+        <div class="ext-btn" data-val="expression courte" data-i18n-val-fr="expression courte" data-i18n-val-en="short expression">Expression courte</div>
       </div>
 
       <div class="actions">
-        <button class="btn-run" id="aiBtn" onclick="generateAndCheck()">Générer les noms disponibles</button>
+        <button class="btn-run" id="aiBtn" onclick="generateAndCheck()" data-i18n="ai_btn">Générer les noms disponibles</button>
         <span id="aiStatus" style="font-size:13px; color:var(--muted); font-family:'DM Mono',monospace;"></span>
       </div>
       <div style="margin-top:8px; font-size:12px; font-family:'DM Mono',monospace;" id="genCounter"></div>
@@ -547,32 +576,32 @@
       <div class="stats">
         <div class="stat">
           <div class="stat-n" id="s-libre">0</div>
-          <div class="stat-l">Disponibles</div>
+          <div class="stat-l" data-i18n="available">Disponibles</div>
         </div>
         <div class="stat" style="border-color:var(--border)">
           <div class="stat-n" style="color:var(--muted)" id="s-total">0</div>
-          <div class="stat-l">Vérifiés</div>
+          <div class="stat-l" data-i18n="checked">Vérifiés</div>
         </div>
       </div>
-      <button class="btn-export" id="exportBtn" onclick="exportLibres()">Copier la liste</button>
+      <button class="btn-export" id="exportBtn" onclick="exportLibres()" data-i18n="copy_list">Copier la liste</button>
     </div>
 
     <div class="results-list" id="results"></div>
-    <div class="empty" id="emptyState">Aucun domaine disponible trouvé pour cette liste.</div>
+    <div class="empty" id="emptyState" data-i18n="no_results">Aucun domaine disponible trouvé pour cette liste.</div>
 
-    <div class="disclaimer">
-      <strong>⚠ Résultats indicatifs uniquement.</strong> Cette vérification repose sur les DNS — un domaine sans DNS configuré peut apparaître comme disponible alors qu'il est déjà enregistré. <strong>Vérifiez toujours avant d'acheter</strong> sur <a href="https://www.namecheap.com" target="_blank">Namecheap</a>, <a href="https://www.ovhcloud.com/fr/domains/" target="_blank">OVH</a> ou <a href="https://www.gandi.net" target="_blank">Gandi</a>.
+    <div class="disclaimer" id="disclaimer">
+      <strong>⚠ <span data-i18n="disclaimer_title">Résultats indicatifs uniquement.</span></strong> <span data-i18n="disclaimer_body">Cette vérification repose sur les DNS — un domaine sans DNS configuré peut apparaître comme disponible alors qu'il est déjà enregistré.</span> <strong data-i18n="disclaimer_cta">Vérifiez toujours avant d'acheter</strong> <span data-i18n="disclaimer_on">sur</span> <a href="https://www.namecheap.com" target="_blank">Namecheap</a>, <a href="https://www.ovhcloud.com/fr/domains/" target="_blank">OVH</a> <span data-i18n="disclaimer_or">ou</span> <a href="https://www.gandi.net" target="_blank">Gandi</a>.
     </div>
 
     <div class="cta-block">
-      <p><strong>Vous avez trouvé votre nom.</strong> Et si le plus dur n'était pas de trouver un nom, mais de construire ce qui va avec — le positionnement, l'offre, la communication ? C'est exactement ce sur quoi nous travaillons.</p>
-      <a href="/cdn-cgi/l/email-protection#21424e4f55404255614c4e52404842524948475544530f424e4c" class="cta-btn">Parler à un expert →</a>
+      <p data-i18n="cta_text"><strong>Vous avez trouvé votre nom.</strong> Et si le plus dur n'était pas de trouver un nom, mais de construire ce qui va avec — le positionnement, l'offre, la communication ? C'est exactement ce sur quoi nous travaillons.</p>
+      <a href="mailto:contact@bingenaming.com" class="cta-btn" data-i18n="cta_btn">Parler à un expert →</a>
     </div>
   </div>
 
   <div class="footer">
-    <span>Vérifié via Cloudflare DNS — aucune donnée stockée</span>
-    <span>Un projet <a href="https://www.mosaicshifter.com" style="color:var(--muted2); text-decoration:none">Mosaic Shifter</a></span>
+    <span data-i18n="footer_dns">Vérifié via Cloudflare DNS — aucune donnée stockée</span>
+    <span>© 2026 BingeNaming</span>
   </div>
 
 </div>
@@ -580,6 +609,97 @@
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   const MAX = 200;
   let libresFound = [];
+  let currentLang = localStorage.getItem('bn_lang') || 'fr';
+
+  const i18n = {
+    fr: {
+      badge: '100% gratuit · sans compte',
+      kicker: 'Vérification de noms de domaine en lot',
+      h1: 'Vérifiez la dispo de <em>200 noms</em><br>de domaine d\'un seul coup !',
+      sub: 'Collez votre liste ou laissez l\'IA en générer pour vous. Seuls les noms disponibles s\'affichent — avec un lien direct pour les enregistrer.',
+      tab_manual: 'Vérifier ma liste', tab_ai: 'Générer avec l\'IA',
+      ext_label: 'Extensions à vérifier',
+      names_label: 'Vos noms — un par ligne (200 max)',
+      clear_list: 'Vider la liste', check_btn: 'Lancer la vérification',
+      clear_results: 'Effacer les résultats', checking: 'Vérification en cours…',
+      ai_desc_label: 'Décrivez votre activité en quelques mots',
+      ai_placeholder: 'ex: cabinet de conseil en transformation des organisations',
+      universe_label: 'Univers sémantique souhaité',
+      ai_btn: 'Générer les noms disponibles',
+      available: 'Disponibles', checked: 'Vérifiés', copy_list: 'Copier la liste',
+      no_results: 'Aucun domaine disponible trouvé pour cette liste.',
+      disclaimer_title: 'Résultats indicatifs uniquement.',
+      disclaimer_body: 'Cette vérification repose sur les DNS — un domaine sans DNS configuré peut apparaître comme disponible alors qu\'il est déjà enregistré.',
+      disclaimer_cta: 'Vérifiez toujours avant d\'acheter',
+      disclaimer_on: 'sur', disclaimer_or: 'ou',
+      cta_text: '<strong>Vous avez trouvé votre nom.</strong> Et si le plus dur n\'était pas de trouver un nom, mais de construire ce qui va avec — le positionnement, l\'offre, la communication ? C\'est exactement ce sur quoi nous travaillons.',
+      cta_btn: 'Parler à un expert →',
+      footer_dns: 'Vérifié via Cloudflare DNS — aucune donnée stockée',
+      gen_remaining: (n) => `${n} génération${n>1?'s':''} gratuite${n>1?'s':''} restante${n>1?'s':''}`,
+      gen_limit: 'Limite atteinte — revenez demain',
+      gen_status_generating: 'Génération des noms…',
+      gen_status_done: (n) => `${n} noms générés — vérification en cours…`,
+      gen_error: 'Erreur — réessayez.',
+      gen_limit_alert: 'Vous avez utilisé vos 3 générations gratuites. Revenez demain ou contactez-nous pour un accès illimité.',
+      register: 'Enregistrer →', copied: 'Copié ✓',
+    },
+    en: {
+      badge: '100% free · no account needed',
+      kicker: 'Bulk domain name availability checker',
+      h1: 'Check <em>200 domain names</em><br>availability at once!',
+      sub: 'Paste your list or let AI generate names for you. Only available domains are shown — with a direct link to register them.',
+      tab_manual: 'Check my list', tab_ai: 'Generate with AI',
+      ext_label: 'Extensions to check',
+      names_label: 'Your names — one per line (200 max)',
+      clear_list: 'Clear list', check_btn: 'Check availability',
+      clear_results: 'Clear results', checking: 'Checking…',
+      ai_desc_label: 'Describe your business in a few words',
+      ai_placeholder: 'e.g. consulting firm for digital transformation, productivity tools for managers',
+      universe_label: 'Preferred semantic universe',
+      ai_btn: 'Generate available names',
+      available: 'Available', checked: 'Checked', copy_list: 'Copy list',
+      no_results: 'No available domains found for this list.',
+      disclaimer_title: 'Indicative results only.',
+      disclaimer_body: 'This check relies on DNS — a domain without DNS configured may appear available even if already registered.',
+      disclaimer_cta: 'Always double-check before buying',
+      disclaimer_on: 'on', disclaimer_or: 'or',
+      cta_text: '<strong>You found your name.</strong> What if the hard part wasn\'t finding a name, but building everything around it — positioning, offer, communication? That\'s exactly what we work on.',
+      cta_btn: 'Talk to an expert →',
+      footer_dns: 'Checked via Cloudflare DNS — no data stored',
+      gen_remaining: (n) => `${n} free generation${n>1?'s':''} remaining`,
+      gen_limit: 'Limit reached — come back tomorrow',
+      gen_status_generating: 'Generating names…',
+      gen_status_done: (n) => `${n} names generated — checking availability…`,
+      gen_error: 'Error — please try again.',
+      gen_limit_alert: 'You have used your 3 free generations. Come back tomorrow or contact us for unlimited access.',
+      register: 'Register →', copied: 'Copied ✓',
+    }
+  };
+
+  function setLang(lang) {
+    currentLang = lang;
+    document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (i18n[lang][key] !== undefined) el.innerHTML = i18n[lang][key];
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (i18n[lang][key]) el.placeholder = i18n[lang][key];
+    });
+    document.querySelectorAll('#aiOptions .ext-btn').forEach(el => {
+      const newVal = el.getAttribute(`data-i18n-val-${lang}`);
+      if (newVal) { el.dataset.val = newVal; el.textContent = newVal.charAt(0).toUpperCase() + newVal.slice(1); }
+    });
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.content = lang === 'fr'
+      ? 'BingeNaming vérifie la disponibilité de 200 noms de domaine en une seule recherche. Gratuit, sans compte, résultats en temps réel.'
+      : 'BingeNaming checks the availability of 200 domain names at once. Free, no account needed, real-time results.';
+    updateGenCounter();
+    localStorage.setItem('bn_lang', lang);
+  }
 
   function switchTab(tab) {
     document.getElementById('panel-manual').style.display = tab === 'manual' ? 'block' : 'none';
@@ -600,9 +720,8 @@
     const remaining = getRemainingGenerations();
     const el = document.getElementById('genCounter');
     if (el) {
-      el.textContent = remaining > 0
-        ? `${remaining} génération${remaining > 1 ? 's' : ''} gratuite${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}`
-        : 'Limite atteinte — revenez demain';
+      const t = i18n[currentLang];
+      el.textContent = remaining > 0 ? t.gen_remaining(remaining) : t.gen_limit;
       el.style.color = remaining > 0 ? 'var(--muted)' : '#ff6b6b';
     }
     const btn = document.getElementById('aiBtn');
@@ -616,8 +735,14 @@
       return;
     }
 
+    const t = i18n[currentLang];
+    if (count >= GEN_LIMIT) {
+      alert(t.gen_limit_alert);
+      return;
+    }
+
     const desc = document.getElementById('aiDesc').value.trim();
-    if (!desc) { alert('Décrivez votre activité en quelques mots.'); return; }
+    if (!desc) { alert(t.ai_desc_label + '…'); return; }
 
     const univers = [...document.querySelectorAll('#aiOptions .ext-btn.active')]
       .map(o => o.dataset.val).join(', ');
@@ -625,7 +750,7 @@
     const btn = document.getElementById('aiBtn');
     const status = document.getElementById('aiStatus');
     btn.disabled = true;
-    status.textContent = 'Génération des noms…';
+    status.textContent = t.gen_status_generating;
 
     try {
       const r = await fetch('/.netlify/functions/generate', {
@@ -638,23 +763,18 @@
 
       if (!names.length) throw new Error('Aucun nom généré');
 
-      // Incrémenter le compteur seulement si succès
       localStorage.setItem(GEN_KEY, count + 1);
       updateGenCounter();
+      status.textContent = t.gen_status_done(names.length);
 
-      status.textContent = `${names.length} noms générés — vérification en cours…`;
-
-      // Switch to manual tab and populate
       document.getElementById('domains').value = names.join('\n');
       updateCount();
       switchTab('manual');
-
-      // Auto-launch check
       await checkAll();
       status.textContent = '';
 
     } catch(e) {
-      status.textContent = 'Erreur — réessayez.';
+      status.textContent = t.gen_error;
     }
 
     btn.disabled = false;
@@ -751,8 +871,8 @@
         row.className = 'row';
         row.innerHTML = `
           <span class="domain-name">${res.domain}</span>
-          <span class="badge-libre">disponible</span>
-          <a class="btn-register" href="${namecheapUrl(res.domain)}" target="_blank">Enregistrer →</a>
+          <span class="badge-libre">${i18n[currentLang].available.toLowerCase()}</span>
+          <a class="btn-register" href="${namecheapUrl(res.domain)}" target="_blank">${i18n[currentLang].register}</a>
         `;
         resultsEl.appendChild(row);
         libresFound.push(res.domain);
@@ -782,9 +902,10 @@
   window.checkAll = checkAll;
   window.clearResults = clearResults;
   window.exportLibres = exportLibres;
+  window.setLang = setLang;
 
   updateCount();
-  updateGenCounter();
+  setLang(currentLang);
 </script>
 </body>
 </html>
