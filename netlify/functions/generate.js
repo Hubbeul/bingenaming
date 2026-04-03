@@ -18,10 +18,10 @@ exports.handler = async function(event) {
     },
     body: JSON.stringify({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
+      max_tokens: 2000,
       messages: [{
         role: "user",
-        content: `Tu es un expert en naming d'entreprise. Génère exactement 50 noms de domaine potentiels pour cette activité : "${description}".
+        content: `Tu es un expert en naming d'entreprise. Génère exactement 200 noms de domaine potentiels pour cette activité : "${description}".
 
 Univers sémantiques souhaités : ${univers || "libre"}.
 
@@ -29,18 +29,19 @@ Règles strictes :
 - Retourne UNIQUEMENT les noms bruts, un par ligne, sans extension, sans numérotation, sans commentaire
 - Chaque nom : 4 à 12 caractères, mémorable, prononçable en français et en anglais
 - Pas de tirets, pas de chiffres
-- Mélange de noms inventés (racines latines/grecques), de mots anglais courts, et d'expressions contractées
+- Grande variété : noms inventés (racines latines/grecques), mots anglais courts, expressions contractées, combinaisons originales
 - Pas de noms génériques comme "digital", "conseil", "solutions", "consulting"
-- Chaque nom doit avoir une logique sémantique défendable en lien avec l'activité décrite
+- Favorise les noms rares et originaux — les noms évidents sont déjà pris
+- Varie les structures : préfixes, suffixes, fusions de mots, néologismes, racines peu exploitées
 
-Réponds UNIQUEMENT avec les 50 noms, un par ligne.`
+Réponds UNIQUEMENT avec les 200 noms, un par ligne.`
       }]
     })
   });
 
   const data = await response.json();
   const text = data.content?.[0]?.text || "";
-  const names = text.split("\n").map(l => l.trim()).filter(Boolean).slice(0, 50);
+  const names = text.split("\n").map(l => l.trim()).filter(Boolean).slice(0, 200);
 
   return {
     statusCode: 200,
