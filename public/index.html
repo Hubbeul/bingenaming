@@ -629,12 +629,16 @@
 
 
   // Extensions
-  document.querySelectorAll('.ext-btn').forEach(btn => {
+  document.querySelectorAll('#extGrid .ext-btn').forEach(btn => {
+    btn.addEventListener('click', () => btn.classList.toggle('active'));
+  });
+
+  document.querySelectorAll('#aiOptions .ext-btn').forEach(btn => {
     btn.addEventListener('click', () => btn.classList.toggle('active'));
   });
 
   function getExtensions() {
-    return [...document.querySelectorAll('.ext-btn.active')].map(b => b.dataset.ext);
+    return [...document.querySelectorAll('#extGrid .ext-btn.active')].map(b => b.dataset.ext);
   }
 
   function updateCount() {
