@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BingeDomain — Vérifiez 200 noms d'un seul coup</title>
-  <meta name="description" content="BingeDomain vérifie la disponibilité de 200 noms de domaine en une seule recherche. Gratuit, sans compte, résultats en temps réel." />
+  <title>BingeNaming — Vérifiez 200 noms d'un seul coup</title>
+  <meta name="description" content="BingeNaming vérifie la disponibilité de 200 noms de domaine en une seule recherche. Gratuit, sans compte, résultats en temps réel." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <style>
@@ -114,7 +114,32 @@
     .panel.active { display: block; }
 
     /* SECTION LABEL */
-    .slabel {
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px;
+    }
+    .tab {
+      flex: 1;
+      padding: 9px 16px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab.active { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .tab:hover:not(.active) { color: var(--text); }
+
+
       font-size: 11px;
       font-weight: 500;
       letter-spacing: 0.1em;
@@ -439,14 +464,20 @@
 <div class="page">
 
   <nav class="nav">
-    <div class="logo"><div class="logo-dot"></div>BingeDomain</div>
+    <div class="logo"><div class="logo-dot"></div>BingeNaming</div>
     <div class="nav-badge">100% gratuit · sans compte</div>
   </nav>
 
   <div class="hero">
     <div class="hero-kicker">Vérification de noms de domaine en lot</div>
     <h1>Vérifiez la dispo de <em>200 noms</em><br>de domaine d'un seul coup !</h1>
-    <p class="hero-sub">Collez votre liste, choisissez vos extensions, lancez. Seuls les noms disponibles s'affichent — avec un lien direct pour les enregistrer.</p>
+    <p class="hero-sub">Collez votre liste ou laissez l'IA en générer pour vous. Seuls les noms disponibles s'affichent — avec un lien direct pour les enregistrer.</p>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" id="tab-manual" onclick="switchTab('manual')">Vérifier ma liste</button>
+    <button class="tab" id="tab-ai" onclick="switchTab('ai')">Générer avec l'IA</button>
   </div>
 
   <!-- EXTENSIONS -->
@@ -479,6 +510,30 @@
       <div class="progress-wrap" id="progressWrap">
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
         <div class="progress-label"><span id="progressText">Vérification en cours…</span><span id="progressPct">0%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL AI -->
+  <div id="panel-ai" style="display:none">
+    <div class="card">
+      <div class="slabel" style="margin-bottom:10px">Décrivez votre activité en quelques mots</div>
+      <input type="text" id="aiDesc" placeholder="ex: cabinet de conseil en transformation des organisations, outils digitaux pour managers" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:11px 14px; font-family:'DM Mono',monospace; font-size:13px; color:var(--text); outline:none;" />
+
+      <div style="margin-top:16px" class="slabel">Univers sémantique souhaité</div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;" id="aiOptions">
+        <div class="ext-btn active" data-val="cognition & attention">Cognition & attention</div>
+        <div class="ext-btn active" data-val="mouvement & transformation">Mouvement & transformation</div>
+        <div class="ext-btn" data-val="construction & outils">Construction & outils</div>
+        <div class="ext-btn" data-val="pédagogie & transmission">Pédagogie & transmission</div>
+        <div class="ext-btn" data-val="technologie & systèmes">Technologie & systèmes</div>
+        <div class="ext-btn" data-val="latin & grec">Latin & grec</div>
+        <div class="ext-btn" data-val="expression courte">Expression courte</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-run" id="aiBtn" onclick="generateAndCheck()">Générer les noms disponibles</button>
+        <span id="aiStatus" style="font-size:13px; color:var(--muted); font-family:'DM Mono',monospace;"></span>
       </div>
     </div>
   </div>
@@ -522,6 +577,56 @@
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   const MAX = 200;
   let libresFound = [];
+
+  function switchTab(tab) {
+    document.getElementById('panel-manual').style.display = tab === 'manual' ? 'block' : 'none';
+    document.getElementById('panel-ai').style.display = tab === 'ai' ? 'block' : 'none';
+    document.getElementById('tab-manual').classList.toggle('active', tab === 'manual');
+    document.getElementById('tab-ai').classList.toggle('active', tab === 'ai');
+  }
+
+  async function generateAndCheck() {
+    const desc = document.getElementById('aiDesc').value.trim();
+    if (!desc) { alert('Décrivez votre activité en quelques mots.'); return; }
+
+    const univers = [...document.querySelectorAll('#aiOptions .ext-btn.active')]
+      .map(o => o.dataset.val).join(', ');
+
+    const btn = document.getElementById('aiBtn');
+    const status = document.getElementById('aiStatus');
+    btn.disabled = true;
+    status.textContent = 'Génération des noms…';
+
+    try {
+      const r = await fetch('/.netlify/functions/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: desc, univers })
+      });
+      const data = await r.json();
+      const names = data.names || [];
+
+      if (!names.length) throw new Error('Aucun nom généré');
+
+      status.textContent = `${names.length} noms générés — vérification en cours…`;
+
+      // Switch to manual tab and populate
+      document.getElementById('domains').value = names.join('\n');
+      updateCount();
+      switchTab('manual');
+
+      // Auto-launch check
+      await checkAll();
+      status.textContent = '';
+
+    } catch(e) {
+      status.textContent = 'Erreur — réessayez.';
+    }
+
+    btn.disabled = false;
+  }
+
+
 
   // Extensions
   document.querySelectorAll('.ext-btn').forEach(btn => {
@@ -633,6 +738,8 @@
     });
   }
 
+  window.switchTab = switchTab;
+  window.generateAndCheck = generateAndCheck;
   window.updateCount = updateCount;
   window.checkAll = checkAll;
   window.clearResults = clearResults;
