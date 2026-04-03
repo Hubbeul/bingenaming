@@ -537,6 +537,7 @@
         <button class="btn-run" id="aiBtn" onclick="generateAndCheck()">Générer les noms disponibles</button>
         <span id="aiStatus" style="font-size:13px; color:var(--muted); font-family:'DM Mono',monospace;"></span>
       </div>
+      <div style="margin-top:8px; font-size:12px; font-family:'DM Mono',monospace;" id="genCounter"></div>
     </div>
   </div>
 
@@ -587,7 +588,34 @@
     document.getElementById('tab-ai').classList.toggle('active', tab === 'ai');
   }
 
+  const GEN_LIMIT = 3;
+  const GEN_KEY = 'bn_gen_count';
+
+  function getRemainingGenerations() {
+    const count = parseInt(localStorage.getItem(GEN_KEY) || '0');
+    return Math.max(0, GEN_LIMIT - count);
+  }
+
+  function updateGenCounter() {
+    const remaining = getRemainingGenerations();
+    const el = document.getElementById('genCounter');
+    if (el) {
+      el.textContent = remaining > 0
+        ? `${remaining} génération${remaining > 1 ? 's' : ''} gratuite${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}`
+        : 'Limite atteinte — revenez demain';
+      el.style.color = remaining > 0 ? 'var(--muted)' : '#ff6b6b';
+    }
+    const btn = document.getElementById('aiBtn');
+    if (btn) btn.disabled = remaining === 0;
+  }
+
   async function generateAndCheck() {
+    const count = parseInt(localStorage.getItem(GEN_KEY) || '0');
+    if (count >= GEN_LIMIT) {
+      alert('Vous avez utilisé vos 3 générations gratuites. Revenez demain ou contactez-nous pour un accès illimité.');
+      return;
+    }
+
     const desc = document.getElementById('aiDesc').value.trim();
     if (!desc) { alert('Décrivez votre activité en quelques mots.'); return; }
 
@@ -609,6 +637,10 @@
       const names = data.names || [];
 
       if (!names.length) throw new Error('Aucun nom généré');
+
+      // Incrémenter le compteur seulement si succès
+      localStorage.setItem(GEN_KEY, count + 1);
+      updateGenCounter();
 
       status.textContent = `${names.length} noms générés — vérification en cours…`;
 
@@ -752,6 +784,7 @@
   window.exportLibres = exportLibres;
 
   updateCount();
+  updateGenCounter();
 </script>
 </body>
 </html>
