@@ -554,13 +554,14 @@
 
       <div style="margin-top:16px" class="slabel" data-i18n="universe_label">Univers sémantique souhaité</div>
       <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;" id="aiOptions">
-        <div class="ext-btn active" data-val="cognition & attention" data-i18n-val-fr="cognition & attention" data-i18n-val-en="cognition & attention">Cognition & attention</div>
-        <div class="ext-btn active" data-val="mouvement & transformation" data-i18n-val-fr="mouvement & transformation" data-i18n-val-en="movement & transformation">Mouvement & transformation</div>
-        <div class="ext-btn" data-val="construction & outils" data-i18n-val-fr="construction & outils" data-i18n-val-en="construction & tools">Construction & outils</div>
-        <div class="ext-btn" data-val="pédagogie & transmission" data-i18n-val-fr="pédagogie & transmission" data-i18n-val-en="pedagogy & learning">Pédagogie & transmission</div>
-        <div class="ext-btn" data-val="technologie & systèmes" data-i18n-val-fr="technologie & systèmes" data-i18n-val-en="technology & systems">Technologie & systèmes</div>
-        <div class="ext-btn" data-val="latin & grec" data-i18n-val-fr="latin & grec" data-i18n-val-en="latin & greek">Latin & grec</div>
-        <div class="ext-btn" data-val="expression courte" data-i18n-val-fr="expression courte" data-i18n-val-en="short expression">Expression courte</div>
+        <div class="ext-btn active" data-val="tech & digital" data-i18n-val-fr="tech & digital" data-i18n-val-en="tech & digital">Tech & digital</div>
+        <div class="ext-btn active" data-val="conseil & services" data-i18n-val-fr="conseil & services" data-i18n-val-en="consulting & services">Conseil & services</div>
+        <div class="ext-btn" data-val="commerce & e-commerce" data-i18n-val-fr="commerce & e-commerce" data-i18n-val-en="retail & e-commerce">Commerce & e-commerce</div>
+        <div class="ext-btn" data-val="santé & bien-être" data-i18n-val-fr="santé & bien-être" data-i18n-val-en="health & wellness">Santé & bien-être</div>
+        <div class="ext-btn" data-val="artisanat & industrie" data-i18n-val-fr="artisanat & industrie" data-i18n-val-en="craft & industry">Artisanat & industrie</div>
+        <div class="ext-btn" data-val="transport & livraison" data-i18n-val-fr="transport & livraison" data-i18n-val-en="transport & delivery">Transport & livraison</div>
+        <div class="ext-btn" data-val="créativité & design" data-i18n-val-fr="créativité & design" data-i18n-val-en="creativity & design">Créativité & design</div>
+        <div class="ext-btn" data-val="court & mémorable" data-i18n-val-fr="court & mémorable" data-i18n-val-en="short & memorable">Court & mémorable</div>
       </div>
 
       <div class="actions">
@@ -754,7 +755,7 @@
     status.textContent = t.gen_status_generating;
 
     try {
-      const r = await fetch('/functions/generate', {
+      const r = await fetch('/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description: desc, univers })
