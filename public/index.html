@@ -596,7 +596,7 @@
 
     <div class="cta-block">
       <p data-i18n="cta_text"><strong>Vous avez trouvé votre nom.</strong> Et si le plus dur n'était pas de trouver un nom, mais de construire ce qui va avec — le positionnement, l'offre, la communication ? C'est exactement ce sur quoi nous travaillons.</p>
-      <a href="mailto:contact@bingenaming.com" class="cta-btn" data-i18n="cta_btn">Parler à un expert →</a>
+      <a href="/cdn-cgi/l/email-protection#563539382237352216343f38313338373b3f38317835393b" class="cta-btn" data-i18n="cta_btn">Parler à un expert →</a>
     </div>
   </div>
 
@@ -607,7 +607,7 @@
 
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   const MAX = 200;
   let libresFound = [];
   let currentLang = localStorage.getItem('bn_lang') || 'fr';
@@ -754,7 +754,7 @@
     status.textContent = t.gen_status_generating;
 
     try {
-      const r = await fetch('/.netlify/functions/generate', {
+      const r = await fetch('/functions/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description: desc, univers })
@@ -901,12 +901,4 @@
   window.generateAndCheck = generateAndCheck;
   window.updateCount = updateCount;
   window.checkAll = checkAll;
-  window.clearResults = clearResults;
-  window.exportLibres = exportLibres;
-  window.setLang = setLang;
-
-  updateCount();
-  setLang(currentLang);
-</script>
-</body>
-</html>
+  window.clearResu
