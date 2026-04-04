@@ -463,7 +463,34 @@
       font-family: 'DM Sans', sans-serif;
     }
     .use-names-btn:hover { background: var(--libre-bg); }
-    .lang-switch {
+    .ai-step { margin-bottom: 20px; }
+    .ai-step-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .ai-chip-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ai-chip {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .ai-chip.active {
+      background: var(--surface2);
+      color: var(--text);
+      border-color: var(--accent);
+    }
+    .ai-chip:hover:not(.active) { border-color: var(--border2); color: var(--text); }
+
       display: flex;
       align-items: center;
       gap: 6px;
@@ -548,23 +575,78 @@
 
   <!-- PANEL AI -->
   <div id="panel-ai" style="display:none">
-    <div class="card">
-      <div class="slabel" style="margin-bottom:10px" data-i18n="ai_desc_label">Décrivez votre activité en quelques mots</div>
-      <input type="text" id="aiDesc" data-i18n-placeholder="ai_placeholder" placeholder="ex: cabinet de conseil en transformation des organisations, outils digitaux pour managers" style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:11px 14px; font-family:'DM Mono',monospace; font-size:13px; color:var(--text); outline:none;" />
 
-      <div style="margin-top:16px" class="slabel" data-i18n="universe_label">Univers sémantique souhaité</div>
-      <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;" id="aiOptions">
-        <div class="ext-btn active" data-val="tech & digital" data-i18n-val-fr="tech & digital" data-i18n-val-en="tech & digital">Tech & digital</div>
-        <div class="ext-btn active" data-val="conseil & services" data-i18n-val-fr="conseil & services" data-i18n-val-en="consulting & services">Conseil & services</div>
-        <div class="ext-btn" data-val="commerce & e-commerce" data-i18n-val-fr="commerce & e-commerce" data-i18n-val-en="retail & e-commerce">Commerce & e-commerce</div>
-        <div class="ext-btn" data-val="santé & bien-être" data-i18n-val-fr="santé & bien-être" data-i18n-val-en="health & wellness">Santé & bien-être</div>
-        <div class="ext-btn" data-val="artisanat & industrie" data-i18n-val-fr="artisanat & industrie" data-i18n-val-en="craft & industry">Artisanat & industrie</div>
-        <div class="ext-btn" data-val="transport & livraison" data-i18n-val-fr="transport & livraison" data-i18n-val-en="transport & delivery">Transport & livraison</div>
-        <div class="ext-btn" data-val="créativité & design" data-i18n-val-fr="créativité & design" data-i18n-val-en="creativity & design">Créativité & design</div>
-        <div class="ext-btn" data-val="court & mémorable" data-i18n-val-fr="court & mémorable" data-i18n-val-en="short & memorable">Court & mémorable</div>
+    <!-- Bannière connexion requise -->
+    <div style="background:var(--libre-bg); border:1px solid var(--libre-border); border-radius:var(--radius); padding:10px 14px; margin-bottom:14px; font-size:13px; color:var(--muted); display:flex; align-items:center; gap:8px;">
+      <span style="color:var(--accent);">⚡</span>
+      <span data-i18n="ai_login_notice">La génération IA nécessite un compte — <strong style="color:var(--text)">1 essai gratuit offert</strong>, puis offre payante.</span>
+    </div>
+
+    <div class="card">
+
+      <!-- Étape 1 -->
+      <div class="ai-step">
+        <div class="ai-step-label" data-i18n="ai_step1">1 — Décrivez votre activité</div>
+        <input type="text" id="aiDesc" data-i18n-placeholder="ai_placeholder"
+          placeholder="ex: agence de conseil en transformation digitale, livraison de repas healthy..."
+          style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:11px 14px; font-family:'DM Mono',monospace; font-size:13px; color:var(--text); outline:none; margin-top:8px;" />
       </div>
 
-      <div class="actions">
+      <!-- Étape 2 -->
+      <div class="ai-step">
+        <div class="ai-step-label" data-i18n="ai_step2">2 — Ce que votre nom doit évoquer <span style="color:var(--muted); font-weight:400">(1 ou 2 max)</span></div>
+        <div class="ai-chip-grid" id="aiTerritory">
+          <div class="ai-chip active" data-dim="territory" data-val-fr="mouvement & élan" data-val-en="movement & momentum">⚡ Mouvement</div>
+          <div class="ai-chip" data-dim="territory" data-val-fr="clarté & lumière" data-val-en="clarity & light">💡 Clarté</div>
+          <div class="ai-chip" data-dim="territory" data-val-fr="construction & structure" data-val-en="structure & craft">🧱 Structure</div>
+          <div class="ai-chip" data-dim="territory" data-val-fr="nature & organique" data-val-en="nature & organic">🌿 Nature</div>
+          <div class="ai-chip" data-dim="territory" data-val-fr="précision & outil" data-val-en="precision & tool">🎯 Précision</div>
+          <div class="ai-chip" data-dim="territory" data-val-fr="vitesse & flux" data-val-en="speed & flow">🌊 Flux</div>
+          <div class="ai-chip" data-dim="territory" data-val-fr="confiance & solidité" data-val-en="trust & solidity">🛡 Confiance</div>
+          <div class="ai-chip" data-dim="territory" data-val-fr="créativité & audace" data-val-en="creativity & boldness">🎨 Créativité</div>
+        </div>
+      </div>
+
+      <!-- Étape 3 -->
+      <div class="ai-step">
+        <div class="ai-step-label" data-i18n="ai_step3">3 — Comment le nom est construit <span style="color:var(--muted); font-weight:400">(1 seul)</span></div>
+        <div class="ai-chip-grid" id="aiMechanic">
+          <div class="ai-chip active" data-dim="mechanic" data-val-fr="mot inventé (néologisme pur)" data-val-en="invented word (pure neologism)">✨ Mot inventé</div>
+          <div class="ai-chip" data-dim="mechanic" data-val-fr="racine ancienne (latin, grec, sanskrit)" data-val-en="ancient root (latin, greek, sanskrit)">📜 Racine ancienne</div>
+          <div class="ai-chip" data-dim="mechanic" data-val-fr="mot existant détourné" data-val-en="existing word repurposed">🔀 Mot détourné</div>
+          <div class="ai-chip" data-dim="mechanic" data-val-fr="fusion de deux mots" data-val-en="two words merged">🔗 Fusion de mots</div>
+          <div class="ai-chip" data-dim="mechanic" data-val-fr="troncature ou contraction" data-val-en="truncation or contraction">✂️ Troncature</div>
+          <div class="ai-chip" data-dim="mechanic" data-val-fr="sonorité pure (phonesthétique)" data-val-en="pure sound (phonaesthetics)">🎵 Sonorité pure</div>
+        </div>
+      </div>
+
+      <!-- Étape 4 -->
+      <div class="ai-step">
+        <div class="ai-step-label" data-i18n="ai_step4">4 — Ton & marché cible</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px;">
+          <div>
+            <div class="slabel" style="margin-bottom:6px" data-i18n="ai_tone">Ton de marque</div>
+            <div class="ai-chip-grid" id="aiTone">
+              <div class="ai-chip active" data-dim="tone" data-val-fr="sérieux & premium" data-val-en="serious & premium">🏆 Sérieux</div>
+              <div class="ai-chip" data-dim="tone" data-val-fr="accessible & chaleureux" data-val-en="accessible & warm">🤝 Accessible</div>
+              <div class="ai-chip" data-dim="tone" data-val-fr="audacieux & disruptif" data-val-en="bold & disruptive">🚀 Audacieux</div>
+              <div class="ai-chip" data-dim="tone" data-val-fr="minimaliste & épuré" data-val-en="minimal & refined">◼ Minimaliste</div>
+              <div class="ai-chip" data-dim="tone" data-val-fr="ludique & mémorable" data-val-en="playful & memorable">😄 Ludique</div>
+            </div>
+          </div>
+          <div>
+            <div class="slabel" style="margin-bottom:6px" data-i18n="ai_market">Marché cible</div>
+            <div class="ai-chip-grid" id="aiMarket">
+              <div class="ai-chip active" data-dim="market" data-val-fr="France" data-val-en="France">🇫🇷 France</div>
+              <div class="ai-chip" data-dim="market" data-val-fr="Europe" data-val-en="Europe">🌍 Europe</div>
+              <div class="ai-chip" data-dim="market" data-val-fr="international anglophone" data-val-en="English-speaking international">🌐 Global EN</div>
+              <div class="ai-chip" data-dim="market" data-val-fr="monde entier (toutes langues)" data-val-en="worldwide (all languages)">🌏 Mondial</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions" style="margin-top:20px;">
         <button class="btn-run" id="aiBtn" onclick="generateAndCheck()" data-i18n="ai_btn">Générer les noms disponibles</button>
         <span id="aiStatus" style="font-size:13px; color:var(--muted); font-family:'DM Mono',monospace;"></span>
       </div>
@@ -703,6 +785,30 @@
     localStorage.setItem('bn_lang', lang);
   }
 
+  // Chip logic
+  document.addEventListener('click', function(e) {
+    const chip = e.target.closest('.ai-chip');
+    if (!chip) return;
+    const dim = chip.dataset.dim;
+    if (dim === 'territory') {
+      const active = document.querySelectorAll('[data-dim="territory"].active');
+      if (chip.classList.contains('active')) { chip.classList.remove('active'); }
+      else if (active.length < 2) { chip.classList.add('active'); }
+    } else {
+      document.querySelectorAll(`[data-dim="${dim}"]`).forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    }
+  });
+
+  function getDimVal(dim) {
+    const chip = document.querySelector(`[data-dim="${dim}"].active`);
+    return chip ? (currentLang === 'fr' ? chip.dataset.valFr : chip.dataset.valEn) : '';
+  }
+  function getDimVals(dim) {
+    return [...document.querySelectorAll(`[data-dim="${dim}"].active`)]
+      .map(c => currentLang === 'fr' ? c.dataset.valFr : c.dataset.valEn).join(' et ');
+  }
+
   function switchTab(tab) {
     document.getElementById('panel-manual').style.display = tab === 'manual' ? 'block' : 'none';
     document.getElementById('panel-ai').style.display = tab === 'ai' ? 'block' : 'none';
@@ -746,8 +852,12 @@
     const desc = document.getElementById('aiDesc').value.trim();
     if (!desc) { alert(t.ai_desc_label + '…'); return; }
 
-    const univers = [...document.querySelectorAll('#aiOptions .ext-btn.active')]
-      .map(o => o.dataset.val).join(', ');
+    const territory = getDimVals('territory');
+    const mechanic = getDimVal('mechanic');
+    const tone = getDimVal('tone');
+    const market = getDimVal('market');
+
+    const expertPrompt = `territoire sémantique: ${territory} | mécanique: ${mechanic} | ton: ${tone} | marché: ${market}`;
 
     const btn = document.getElementById('aiBtn');
     const status = document.getElementById('aiStatus');
@@ -758,7 +868,7 @@
       const r = await fetch('/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: desc, univers })
+        body: JSON.stringify({ description: desc, territory, mechanic, tone, market })
       });
       const data = await r.json();
       const names = data.names || [];

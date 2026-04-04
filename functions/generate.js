@@ -1,15 +1,50 @@
 export async function onRequestPost(context) {
   try {
-    const { description, univers } = await context.request.json();
+    const { description, territory, mechanic, tone, market } = await context.request.json();
 
     if (!description) {
       return new Response(JSON.stringify({ error: 'Description manquante' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        status: 400, headers: { 'Content-Type': 'application/json' }
       });
     }
 
     const apiKey = context.env.ANTHROPIC_API_KEY;
+
+    const expertPrompt = `Tu es un expert senior en naming de marque, avec 15 ans d'expérience en agence internationale.
+
+Génère exactement 200 noms de domaine pour cette activité : "${description}"
+
+PARAMÈTRES DE NAMING CHOISIS PAR LE CLIENT :
+- Territoire sémantique (ce que le nom évoque) : ${territory || 'libre'}
+- Mécanique linguistique (comment le nom est construit) : ${mechanic || 'libre'}
+- Ton de marque : ${tone || 'professionnel'}
+- Marché cible : ${market || 'France'}
+
+RÈGLES ABSOLUES :
+- Retourne UNIQUEMENT les noms bruts, un par ligne, sans extension, sans numérotation, sans commentaire
+- Longueur : 4 à 11 caractères maximum
+- Prononçable facilement dans la langue du marché cible
+- Pas de tirets, pas de chiffres
+- Chaque nom doit respecter la mécanique linguistique choisie
+- Chaque nom doit évoquer le territoire sémantique choisi
+- Chaque nom doit projeter le ton de marque choisi
+
+INTERDICTIONS STRICTES (patterns saturés, .com tous pris) :
+- Suffixes : -ify, -ly, -io, -hub, -nest, -lab, -labs, -hq, -app, -ware, -soft, -tech, -digital
+- Préfixes : e-, i-, my-, get-, go-, on-, be-
+- Mots trop génériques : flow, boost, smart, fast, quick, easy, pro, plus, max, prime, nova, next
+- Noms de plus de 12 caractères
+
+CRITÈRES DE QUALITÉ D'UN GRAND NOM :
+- Mémorable en une lecture (test des 2 secondes)
+- Aucune connotation négative dans les langues du marché
+- Suggère sans décrire littéralement
+- Sonne comme une marque établie, pas comme un domaine de seconde zone
+- Potentiellement défendable comme marque déposée
+
+Inspire-toi des mécaniques qui ont produit : Stripe, Figma, Notion, Slack, Zoom, Canva, Prism, Bolt — chacun court, original, disponible à l'époque, prononçable partout.
+
+Réponds UNIQUEMENT avec les 200 noms, un par ligne.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -21,23 +56,7 @@ export async function onRequestPost(context) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,
-        messages: [{
-          role: 'user',
-          content: `Tu es un expert en naming d'entreprise. Génère exactement 200 noms de domaine potentiels pour cette activité : "${description}".
-
-Univers sémantiques souhaités : ${univers || 'libre'}.
-
-Règles strictes :
-- Retourne UNIQUEMENT les noms bruts, un par ligne, sans extension, sans numérotation, sans commentaire
-- Chaque nom : 4 à 12 caractères, mémorable, prononçable en français et en anglais
-- Pas de tirets, pas de chiffres
-- Grande variété : noms inventés (racines latines/grecques), mots anglais courts, expressions contractées, combinaisons originales
-- Pas de noms génériques comme "digital", "conseil", "solutions", "consulting"
-- Favorise les noms rares et originaux — les noms évidents sont déjà pris
-- Varie les structures : préfixes, suffixes, fusions de mots, néologismes, racines peu exploitées
-
-Réponds UNIQUEMENT avec les 200 noms, un par ligne.`
-        }]
+        messages: [{ role: 'user', content: expertPrompt }]
       })
     });
 
@@ -47,16 +66,12 @@ Réponds UNIQUEMENT avec les 200 noms, un par ligne.`
 
     return new Response(JSON.stringify({ names }), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
     });
 
   } catch (e) {
     return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      status: 500, headers: { 'Content-Type': 'application/json' }
     });
   }
 }
