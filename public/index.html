@@ -818,8 +818,10 @@
 
   const GEN_LIMIT = 3;
   const GEN_KEY = 'bn_gen_count';
+  const isAdmin = () => localStorage.getItem('bn_admin') === 'true';
 
   function getRemainingGenerations() {
+    if (isAdmin()) return 999;
     const count = parseInt(localStorage.getItem(GEN_KEY) || '0');
     return Math.max(0, GEN_LIMIT - count);
   }
@@ -871,11 +873,16 @@
         body: JSON.stringify({ description: desc, territory, mechanic, tone, market })
       });
       const data = await r.json();
-      const names = data.names || [];
+      const rawNames = data.names || [];
+      // Dédoublonnage + nettoyage
+      const seen = new Set();
+      const names = rawNames
+        .map(n => n.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
+        .filter(n => n.length >= 3 && n.length <= 12 && !seen.has(n) && seen.add(n));
 
       if (!names.length) throw new Error('Aucun nom généré');
 
-      localStorage.setItem(GEN_KEY, count + 1);
+      if (!isAdmin()) localStorage.setItem(GEN_KEY, count + 1);
       updateGenCounter();
       status.textContent = t.gen_status_done(names.length);
 

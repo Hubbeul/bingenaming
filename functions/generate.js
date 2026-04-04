@@ -62,7 +62,11 @@ Réponds UNIQUEMENT avec les 200 noms, un par ligne.`;
 
     const data = await response.json();
     const text = data.content?.[0]?.text || '';
-    const names = text.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 200);
+    const seen = new Set();
+    const names = text.split('\n')
+      .map(l => l.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
+      .filter(n => n.length >= 3 && n.length <= 12 && !seen.has(n) && seen.add(n))
+      .slice(0, 200);
 
     return new Response(JSON.stringify({ names }), {
       status: 200,
