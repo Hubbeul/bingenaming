@@ -1,7 +1,7 @@
 const CACHE_MIN = 20;
-const BATCH_SIZE = 300;
-const MAX_BATCHES = 3;
+const MAX_BATCHES = 2;
 const ALLOWED_EXTENSIONS = ['.com', '.fr', '.io', '.org'];
+const DNS_CONCURRENCY = 10;
 
 async function checkDNS(name, ext) {
   try {
@@ -15,19 +15,32 @@ async function checkDNS(name, ext) {
   }
 }
 
-async function queryCache(supabaseUrl, supabaseKey, { territory, mechanic, tone, extensions }) {
+async function checkDNSBatch(pairs) {
+  const results = [];
+  for (let i = 0; i < pairs.length; i += DNS_CONCURRENCY) {
+    const chunk = pairs.slice(i, i + DNS_CONCURRENCY);
+    const chunkResults = await Promise.all(
+      chunk.map(async ({ name, ext }) => {
+        const available = await checkDNS(name, ext);
+        return { name, ext, available };
+      })
+    );
+    results.push(...chunkResults);
+    if (results.filter(r => r.available).length >= CACHE_MIN) break;
+  }
+  return results;
+}
+
+async function queryCache(supabaseUrl, supabaseKey, { territory, mechanic, extensions }) {
   const ext = extensions.filter(e => ALLOWED_EXTENSIONS.includes(e));
   if (!ext.length) return [];
 
   const params = new URLSearchParams({
     select: 'name,extension',
     available: 'eq.true',
-    limit: '60',
+    limit: '40',
     order: 'checked_at.desc'
   });
-
-  if (territory) params.append('territory', `ilike.%${territory.split(' et ')[0].substring(0, 15)}%`);
-  if (mechanic) params.append('mechanic', `ilike.%${mechanic.substring(0, 15)}%`);
 
   const url = `${supabaseUrl}/rest/v1/domains_cache?${params.toString()}`;
   const res = await fetch(url, {
@@ -40,21 +53,11 @@ async function queryCache(supabaseUrl, supabaseKey, { territory, mechanic, tone,
 
   if (!res.ok) return [];
   const data = await res.json();
-  return data.filter(d => ext.includes(d.extension));
+  return data.filter(d => ext.includes(d.extension)).slice(0, 30);
 }
 
-async function saveToCache(supabaseUrl, supabaseKey, names, dims) {
-  if (!names.length) return;
-  const rows = names.map(({ name, extension, available }) => ({
-    name, extension, available,
-    territory: dims.territory || null,
-    mechanic: dims.mechanic || null,
-    tone: dims.tone || null,
-    market: dims.market || null,
-    checked_at: new Date().toISOString(),
-    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-  }));
-
+async function saveToCache(supabaseUrl, supabaseKey, rows) {
+  if (!rows.length) return;
   await fetch(`${supabaseUrl}/rest/v1/domains_cache`, {
     method: 'POST',
     headers: {
@@ -68,30 +71,19 @@ async function saveToCache(supabaseUrl, supabaseKey, names, dims) {
 }
 
 async function generateNames(apiKey, description, dims) {
-  const prompt = `Tu es un expert senior en naming de marque, avec 15 ans d experience en agence internationale.
+  const prompt = `Tu es un expert senior en naming de marque.
 
-Genere exactement ${BATCH_SIZE} noms de domaine pour cette activite : "${description}"
+Genere exactement 80 noms courts pour : "${description}"
 
-PARAMETRES DE NAMING :
-- Territoire semantique : ${dims.territory || 'libre'}
-- Mecanique linguistique : ${dims.mechanic || 'libre'}
-- Ton de marque : ${dims.tone || 'professionnel'}
-- Marche cible : ${dims.market || 'France'}
+Parametres : territoire=${dims.territory||'libre'}, mecanique=${dims.mechanic||'libre'}, ton=${dims.tone||'pro'}, marche=${dims.market||'France'}
 
-REGLES ABSOLUES :
-- Retourne UNIQUEMENT les noms bruts, un par ligne, sans extension, sans numerotation
-- Longueur : 4 a 11 caracteres
-- Pas de tirets, pas de chiffres
-- Chaque nom respecte la mecanique et le territoire choisis
+REGLES :
+- Un nom par ligne, UNIQUEMENT les noms bruts
+- 4 a 10 caracteres, pas de tirets ni chiffres
+- Interdits : -ify,-ly,-io,-hub,-lab,-hq,-app, prefixes e-/i-/my-/get-/go-
+- Mots generiques interdits : flow,boost,smart,fast,easy,pro,nova,next,sync
 
-INTERDICTIONS STRICTES :
-- Suffixes : -ify, -ly, -io, -hub, -nest, -lab, -labs, -hq, -app, -ware, -soft, -tech
-- Prefixes : e-, i-, my-, get-, go-, on-, be-
-- Mots generiques : flow, boost, smart, fast, quick, easy, pro, nova, next, sync, link, snap
-
-Inspire-toi de : Stripe, Figma, Notion, Slack, Zoom, Canva.
-
-Reponds UNIQUEMENT avec les ${BATCH_SIZE} noms, un par ligne.`;
+Reponds avec 80 noms, un par ligne.`;
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -102,7 +94,7 @@ Reponds UNIQUEMENT avec les ${BATCH_SIZE} noms, un par ligne.`;
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
+      max_tokens: 1000,
       messages: [{ role: 'user', content: prompt }]
     })
   });
@@ -112,7 +104,8 @@ Reponds UNIQUEMENT avec les ${BATCH_SIZE} noms, un par ligne.`;
   const seen = new Set();
   return text.split('\n')
     .map(l => l.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
-    .filter(n => n.length >= 4 && n.length <= 11 && !seen.has(n) && seen.add(n));
+    .filter(n => n.length >= 4 && n.length <= 10 && !seen.has(n) && seen.add(n))
+    .slice(0, 80);
 }
 
 export async function onRequestPost(context) {
@@ -131,41 +124,56 @@ export async function onRequestPost(context) {
     const anthropicKey = context.env.ANTHROPIC_API_KEY;
     const dims = { territory, mechanic, tone, market };
     const exts = extensions.filter(e => ALLOWED_EXTENSIONS.includes(e));
+    if (!exts.length) exts.push('.com');
 
     let available = [];
 
-    // 1. Cache Supabase
+    // 1. Cache Supabase (1 requête HTTP)
     try {
       const cached = await queryCache(supabaseUrl, supabaseKey, { ...dims, extensions: exts });
-      const recheckResults = await Promise.all(
-        cached.map(async ({ name, extension }) => {
-          const ok = await checkDNS(name, extension);
-          if (!ok) {
-            fetch(`${supabaseUrl}/rest/v1/domains_cache?name=eq.${name}&extension=eq.${extension}`, {
-              method: 'PATCH',
-              headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}`, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ available: false })
-            });
-          }
-          return ok ? `${name}${extension}` : null;
-        })
-      );
-      available = recheckResults.filter(Boolean);
+      if (cached.length > 0) {
+        const pairs = cached.map(({ name, extension }) => ({ name, ext: extension }));
+        const recheckResults = await checkDNSBatch(pairs);
+        available = recheckResults.filter(r => r.available).map(r => `${r.name}${r.ext}`);
+
+        // Invalider les noms pris (1 requête HTTP max)
+        const taken = recheckResults.filter(r => !r.available);
+        if (taken.length > 0) {
+          const names = taken.map(r => r.name).join(',');
+          fetch(`${supabaseUrl}/rest/v1/domains_cache?name=in.(${names})`, {
+            method: 'PATCH',
+            headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ available: false })
+          });
+        }
+      }
     } catch (_) {}
 
-    // 2. Fallback generation si cache insuffisant
+    // 2. Fallback génération si cache insuffisant
     if (available.length < CACHE_MIN) {
       for (let batch = 0; batch < MAX_BATCHES && available.length < CACHE_MIN; batch++) {
         const names = await generateNames(anthropicKey, description, dims);
-        const checkResults = [];
+        const pairs = [];
         for (const name of names) {
-          for (const ext of exts) {
-            const isAvailable = await checkDNS(name, ext);
-            checkResults.push({ name, extension: ext, available: isAvailable });
-            if (isAvailable) available.push(`${name}${ext}`);
-          }
+          for (const ext of exts) pairs.push({ name, ext });
         }
-        context.waitUntil(saveToCache(supabaseUrl, supabaseKey, checkResults, dims));
+
+        const dnsResults = await checkDNSBatch(pairs);
+
+        // Sauvegarder dans cache (1 requête HTTP)
+        const cacheRows = dnsResults.map(({ name, ext, available: av }) => ({
+          name, extension: ext, available: av,
+          territory: territory || null, mechanic: mechanic || null,
+          tone: tone || null, market: market || null,
+          checked_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        }));
+
+        context.waitUntil(saveToCache(supabaseUrl, supabaseKey, cacheRows));
+
+        const newAvail = dnsResults.filter(r => r.available).map(r => `${r.name}${r.ext}`);
+        available.push(...newAvail);
+
         if (available.length >= CACHE_MIN) break;
       }
     }
