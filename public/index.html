@@ -871,7 +871,7 @@
       const r = await fetch('/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: desc, territory, mechanic, tone, market })
+        body: JSON.stringify({ description: desc, territory, mechanic, tone, market, extensions: getExtensions() })
       });
       const data = await r.json();
       const rawNames = data.names || [];
