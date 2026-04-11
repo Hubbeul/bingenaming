@@ -59,7 +59,42 @@
     }
 
     /* HERO */
-    .hero { margin-bottom: 48px; }
+    .hero-cards {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px;
+    }
+    .hero-card {
+      border-radius: 12px; padding: 18px 16px 14px;
+      cursor: pointer; transition: transform 0.15s; border: 1.5px solid; text-align: left;
+    }
+    .hero-card:hover { transform: translateY(-2px); }
+    .hero-card-free { background: var(--surface); border-color: var(--border); }
+    .hero-card-free:hover { border-color: var(--border2); }
+    .hero-card-ai { background: #0f1a00; border-color: var(--accent); }
+    .hero-card-tag {
+      font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+      font-weight: 600; margin-bottom: 8px; color: var(--muted);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .hero-card-ai .hero-card-tag { color: var(--accent); }
+    .hero-price-pill {
+      background: var(--accent); color: #0c0c0c;
+      font-size: 11px; font-weight: 700; border-radius: 20px;
+      padding: 2px 9px; letter-spacing: 0;
+    }
+    .hero-card-title {
+      font-size: 14px; font-weight: 600; color: var(--text);
+      margin-bottom: 6px; line-height: 1.3;
+    }
+    .hero-card-desc {
+      font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 12px;
+    }
+    .hero-card-cta {
+      font-size: 12px; font-weight: 600; padding: 6px 12px;
+      border-radius: 6px; background: var(--surface2); color: var(--muted); display: inline-block;
+    }
+    .hero-card-cta-ai { background: var(--accent); color: #0c0c0c; }
+    @media (max-width: 480px) { .hero-cards { grid-template-columns: 1fr; } }
+
     .hero-kicker {
       font-family: 'DM Mono', monospace;
       font-size: 11px;
@@ -554,9 +589,26 @@
   <div class="hero">
     <div class="hero-kicker" data-i18n="kicker">Trouvez votre nom de domaine</div>
     <h1 data-i18n="h1">Trouvez votre nom de domaine</h1>
-    <p class="hero-sub" data-i18n="sub1">Vérifiez la dispo de 200 sites à la fois en injectant votre propre liste</p>
-    <p class="hero-sub" style="margin-top:6px;" data-i18n="sub2">Générez une liste de 10 noms disponibles<sup>*</sup> grâce à notre IA pour 10€</p>
-    <p style="font-size:11px; color:var(--muted); margin-top:10px; font-family:'DM Mono',monospace;" data-i18n="sub_note">* Basé sur les DNS actifs — un domaine sans DNS peut apparaître disponible alors qu'il est déjà enregistré. Vérifiez toujours avant d'acheter.</p>
+
+    <!-- Cartes valeur -->
+    <div class="hero-cards">
+      <div class="hero-card hero-card-free" onclick="switchTab('manual')">
+        <div class="hero-card-tag" data-i18n="card_free_tag">Gratuit</div>
+        <div class="hero-card-title" data-i18n="card_free_title">J'ai déjà des idées</div>
+        <div class="hero-card-desc" data-i18n="card_free_desc">Collez jusqu'à 200 noms et vérifiez leur disponibilité en quelques secondes.</div>
+        <span class="hero-card-cta" data-i18n="card_free_cta">Vérifier ma liste →</span>
+      </div>
+      <div class="hero-card hero-card-ai" onclick="switchTab('ai')">
+        <div class="hero-card-tag">
+          <span data-i18n="card_ai_tag">IA experte</span>
+          <span class="hero-price-pill">10€</span>
+        </div>
+        <div class="hero-card-title" data-i18n="card_ai_title">Je veux que l'IA m'aide</div>
+        <div class="hero-card-desc" data-i18n="card_ai_desc">Notre IA génère 10 noms disponibles* calibrés sur votre activité et la phonosémantique.</div>
+        <span class="hero-card-cta hero-card-cta-ai" data-i18n="card_ai_cta">Générer avec l'IA →</span>
+      </div>
+    </div>
+    <p style="font-size:11px; color:var(--muted); margin-top:8px; font-family:'DM Mono',monospace; text-align:center;" data-i18n="sub_note">* Basé sur les DNS actifs — vérifiez toujours avant d'acheter</p>
   </div>
 
   <!-- TABS -->
@@ -735,6 +787,14 @@
       badge: 'Vérification gratuite · Génération IA payante',
       kicker: 'Trouvez votre nom de domaine',
       h1: 'Trouvez votre nom de domaine',
+      card_free_tag: 'Gratuit',
+      card_free_title: 'J\'ai déjà des idées',
+      card_free_desc: 'Collez jusqu\'à 200 noms et vérifiez leur disponibilité en quelques secondes.',
+      card_free_cta: 'Vérifier ma liste →',
+      card_ai_tag: 'IA experte',
+      card_ai_title: 'Je veux que l\'IA m\'aide',
+      card_ai_desc: 'Notre IA génère 10 noms disponibles* calibrés sur votre activité et la phonosémantique.',
+      card_ai_cta: 'Générer avec l\'IA →',
       sub1: 'Vérifiez la dispo de 200 sites à la fois en injectant votre propre liste',
       sub2: 'Générez une liste de 10 noms disponibles<sup>*</sup> grâce à notre IA pour 10€',
       sub_note: '* Basé sur les DNS actifs — un domaine sans DNS peut apparaître disponible alors qu\'il est déjà enregistré. Vérifiez toujours avant d\'acheter.',
@@ -783,6 +843,14 @@
       badge: 'Free checker · AI generation from €10',
       kicker: 'Find your domain name',
       h1: 'Find your domain name',
+      card_free_tag: 'Free',
+      card_free_title: 'I already have ideas',
+      card_free_desc: 'Paste up to 200 names and check their availability in seconds.',
+      card_free_cta: 'Check my list →',
+      card_ai_tag: 'Expert AI',
+      card_ai_title: 'I want AI to help me',
+      card_ai_desc: 'Our AI generates 10 available names* calibrated on your activity and phonosemantics.',
+      card_ai_cta: 'Generate with AI →',
       sub1: 'Check 200 domain names availability at once by injecting your own list',
       sub2: 'Generate 10 available names<sup>*</sup> with our AI for €10',
       sub_note: '* Based on active DNS records — a domain without DNS may appear available even if already registered. Always verify before buying.',
