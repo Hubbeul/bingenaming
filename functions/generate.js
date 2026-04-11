@@ -11,21 +11,25 @@ export async function onRequestPost(context) {
 
     const apiKey = context.env.ANTHROPIC_API_KEY;
 
-    const prompt = `Tu es un expert senior en naming de marque.
+    const prompt = `Tu es un expert mondial en naming de marque (Nike, Spotify, Figma, Notion, Canva).
 
-Genere exactement 200 noms courts pour : "${description}"
+Mission : generer 200 noms de domaine ORIGINAUX pour : "${description}"
+Territoire : ${territory||'libre'} | Mecanique : ${mechanic||'neologisme'} | Ton : ${tone||'pro'} | Marche : ${market||'France'}
 
-Parametres : territoire=${territory||'libre'}, mecanique=${mechanic||'libre'}, ton=${tone||'pro'}, marche=${market||'France'}
+STRATEGIE OBLIGATOIRE pour maximiser la disponibilite :
+- Privilege les NEOLOGISMES PURS : mots inventés qui n'existent dans aucune langue (ex: Zalando, Spotify, Kodak)
+- Utilise des RACINES RARES : termes issus du gaelique, basque, swahili, islandais, sanskrit — sonoritees exotiques mais prononçables
+- FUSIONNE deux mots partiels de facon inattendue (ex: Figma = fig+ma, Pinterest = pin+interest)
+- TRONQUE brutalement un concept (ex: Reddit, Tumblr)
+- Cree des SONORITEES PURES sans signification directe mais memorables (ex: Zoom, Slack)
 
-REGLES ABSOLUES :
-- Un nom par ligne, UNIQUEMENT les noms bruts, sans extension ni numerotation
-- 4 a 10 caracteres, pas de tirets ni chiffres
-- Interdits : -ify,-ly,-io,-hub,-lab,-hq,-app, prefixes e-/i-/my-/get-/go-/on-/be-
-- Mots generiques interdits : flow,boost,smart,fast,easy,pro,nova,next,sync,link,snap
-- Favorise les noms rares, originaux, memorables
-- Inspire-toi de : Stripe, Figma, Notion, Slack, Zoom, Canva
+INTERDICTIONS ABSOLUES (noms certainement pris) :
+- Mots anglais courants seuls : lens, forge, beacon, prism, vault, surge, bridge, craft, wave, peak, arc, core, axis, base, edge, node, root, stem, bolt, spark, glow, rise, lift, shift, pivot, frame, grid, beam, chain, flow, loop, gate, hub, lab, nest
+- Suffixes usés : -ify, -ly, -io, -hub, -lab, -hq, -app, -ware, -tech, -soft, -digital, -online
+- Prefixes usés : e-, i-, my-, get-, go-, on-, be-, re-
+- Noms de plus de 11 caracteres
 
-Reponds avec exactement 200 noms, un par ligne.`;
+FORMAT : exactement 200 noms, un par ligne, sans extension, sans numero, sans commentaire.`;
 
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -46,7 +50,7 @@ Reponds avec exactement 200 noms, un par ligne.`;
     const seen = new Set();
     const names = text.split('\n')
       .map(l => l.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
-      .filter(n => n.length >= 4 && n.length <= 10 && !seen.has(n) && seen.add(n))
+      .filter(n => n.length >= 4 && n.length <= 11 && !seen.has(n) && seen.add(n))
       .slice(0, 200);
 
     return new Response(JSON.stringify({ names }), {

@@ -860,37 +860,60 @@
     const tone = getDimVal('tone');
     const market = getDimVal('market');
 
-    const expertPrompt = `territoire sémantique: ${territory} | mécanique: ${mechanic} | ton: ${tone} | marché: ${market}`;
-
     const btn = document.getElementById('aiBtn');
     const status = document.getElementById('aiStatus');
     btn.disabled = true;
-    status.textContent = t.gen_status_generating;
+
+    const GUARANTEED = 10;
+    const MAX_RETRIES = 3;
+    let allNames = new Set();
+    let attempt = 0;
 
     try {
-      const r = await fetch('/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: desc, territory, mechanic, tone, market, extensions: getExtensions() })
-      });
-      const data = await r.json();
-      const rawNames = data.names || [];
-      // Dédoublonnage + nettoyage
-      const seen = new Set();
-      const names = rawNames
-        .map(n => n.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
-        .filter(n => n.length >= 3 && n.length <= 12 && !seen.has(n) && seen.add(n));
+      while (attempt < MAX_RETRIES) {
+        attempt++;
+        status.textContent = attempt === 1
+          ? t.gen_status_generating
+          : (currentLang === 'fr'
+              ? `Enrichissement en cours… (tentative ${attempt}/${MAX_RETRIES})`
+              : `Enriching results… (attempt ${attempt}/${MAX_RETRIES})`);
 
-      if (!names.length) throw new Error('Aucun nom généré');
+        const r = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: desc, territory, mechanic, tone, market, extensions: getExtensions() })
+        });
+        const data = await r.json();
+        const rawNames = data.names || [];
+        const seen = new Set([...allNames]);
+        rawNames
+          .map(n => n.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
+          .filter(n => n.length >= 4 && n.length <= 11 && !seen.has(n) && seen.add(n))
+          .forEach(n => allNames.add(n));
+
+        // Vérifier combien sont disponibles après cette passe
+        const namesList = [...allNames];
+        document.getElementById('domains').value = namesList.join('\n');
+        updateCount();
+        switchTab('manual');
+
+        status.textContent = currentLang === 'fr'
+          ? `Vérification de ${namesList.length} noms…`
+          : `Checking ${namesList.length} names…`;
+
+        await checkAll();
+
+        const libreCount = parseInt(document.getElementById('s-libre').textContent) || 0;
+        if (libreCount >= GUARANTEED || attempt >= MAX_RETRIES) break;
+
+        // Pas assez — on relance
+        status.textContent = currentLang === 'fr'
+          ? `${libreCount} trouvés, recherche de plus…`
+          : `${libreCount} found, searching for more…`;
+      }
 
       if (!isAdmin()) localStorage.setItem(GEN_KEY, count + 1);
       updateGenCounter();
-      status.textContent = t.gen_status_done(names.length);
-
-      document.getElementById('domains').value = names.join('\n');
-      updateCount();
-      switchTab('manual');
-      await checkAll();
       status.textContent = '';
 
     } catch(e) {
