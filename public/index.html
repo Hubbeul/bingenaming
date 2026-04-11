@@ -466,31 +466,54 @@
     .use-names-btn:hover { background: var(--libre-bg); }
     .ai-step { margin-bottom: 20px; }
     .ai-step-label {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text);
-      margin-bottom: 10px;
+      font-size: 13px; font-weight: 500; color: var(--text);
+      margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+    }
+    .ai-step-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--accent); color: #0c0c0c;
+      font-size: 11px; font-weight: 700; flex-shrink: 0;
     }
     .ai-chip-grid { display: flex; flex-wrap: wrap; gap: 6px; }
     .ai-chip {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 12px;
-      padding: 5px 12px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.15s;
-      user-select: none;
-      white-space: nowrap;
+      font-family: 'DM Sans', sans-serif; font-size: 12px;
+      padding: 6px 14px; border-radius: 20px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--muted); cursor: pointer; transition: all 0.15s;
+      user-select: none; white-space: nowrap;
     }
-    .ai-chip.active {
-      background: var(--surface2);
-      color: var(--text);
-      border-color: var(--accent);
-    }
+    .ai-chip.active { background: var(--surface2); color: var(--text); border-color: var(--accent); }
     .ai-chip:hover:not(.active) { border-color: var(--border2); color: var(--text); }
+    .ai-strategy-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px;
+    }
+    .ai-strategy-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px; cursor: pointer;
+      transition: all 0.15s; user-select: none;
+    }
+    .ai-strategy-card.active {
+      background: var(--surface2); border-color: var(--accent);
+    }
+    .ai-strategy-name {
+      font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 4px;
+    }
+    .ai-strategy-card.active .ai-strategy-name { color: var(--accent); }
+    .ai-strategy-ex { font-size: 11px; color: var(--border2); }
+    .ai-strategy-card.active .ai-strategy-ex { color: var(--muted); }
+    .ai-market-grid { display: flex; gap: 8px; margin-top: 8px; }
+    .ai-market-btn {
+      flex: 1; text-align: center; padding: 10px;
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: 13px; color: var(--muted); cursor: pointer;
+      transition: all 0.15s; background: var(--surface);
+    }
+    .ai-market-btn.active { border-color: var(--accent); color: var(--text); background: var(--surface2); }
+    .auto-tag {
+      font-size: 11px; color: var(--muted); background: var(--surface);
+      border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px;
+    }
 
       display: flex;
       align-items: center;
@@ -577,7 +600,6 @@
   <!-- PANEL AI -->
   <div id="panel-ai" style="display:none">
 
-    <!-- Bannière connexion requise -->
     <div style="background:var(--libre-bg); border:1px solid var(--libre-border); border-radius:var(--radius); padding:10px 14px; margin-bottom:14px; font-size:13px; color:var(--muted); display:flex; align-items:center; gap:8px;">
       <span style="color:var(--accent);">⚡</span>
       <span data-i18n="ai_login_notice">La génération IA nécessite un compte — <strong style="color:var(--text)">1 essai gratuit offert</strong>, puis offre payante.</span>
@@ -587,68 +609,78 @@
 
       <!-- Étape 1 -->
       <div class="ai-step">
-        <div class="ai-step-label" data-i18n="ai_step1">1 — Décrivez votre activité</div>
+        <div class="ai-step-label"><span class="ai-step-num">1</span><span data-i18n="ai_step1">Décrivez votre activité en quelques mots</span></div>
         <input type="text" id="aiDesc" data-i18n-placeholder="ai_placeholder"
-          placeholder="ex: agence de conseil en transformation digitale, livraison de repas healthy..."
-          style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:11px 14px; font-family:'DM Mono',monospace; font-size:13px; color:var(--text); outline:none; margin-top:8px;" />
+          placeholder="ex: conseil en transformation digitale, livraison de repas healthy, application de méditation…"
+          style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:11px 14px; font-family:'DM Mono',monospace; font-size:13px; color:var(--text); outline:none; margin-top:8px; box-sizing:border-box;" />
       </div>
 
-      <!-- Étape 2 -->
+      <!-- Étape 2 — Stratégie -->
       <div class="ai-step">
-        <div class="ai-step-label" data-i18n="ai_step2">2 — Ce que votre nom doit évoquer <span style="color:var(--muted); font-weight:400">(1 ou 2 max)</span></div>
-        <div class="ai-chip-grid" id="aiTerritory">
-          <div class="ai-chip active" data-dim="territory" data-val-fr="mouvement & élan" data-val-en="movement & momentum">⚡ Mouvement</div>
-          <div class="ai-chip" data-dim="territory" data-val-fr="clarté & lumière" data-val-en="clarity & light">💡 Clarté</div>
-          <div class="ai-chip" data-dim="territory" data-val-fr="construction & structure" data-val-en="structure & craft">🧱 Structure</div>
-          <div class="ai-chip" data-dim="territory" data-val-fr="nature & organique" data-val-en="nature & organic">🌿 Nature</div>
-          <div class="ai-chip" data-dim="territory" data-val-fr="précision & outil" data-val-en="precision & tool">🎯 Précision</div>
-          <div class="ai-chip" data-dim="territory" data-val-fr="vitesse & flux" data-val-en="speed & flow">🌊 Flux</div>
-          <div class="ai-chip" data-dim="territory" data-val-fr="confiance & solidité" data-val-en="trust & solidity">🛡 Confiance</div>
-          <div class="ai-chip" data-dim="territory" data-val-fr="créativité & audace" data-val-en="creativity & boldness">🎨 Créativité</div>
-        </div>
-      </div>
-
-      <!-- Étape 3 -->
-      <div class="ai-step">
-        <div class="ai-step-label" data-i18n="ai_step3">3 — Comment le nom est construit <span style="color:var(--muted); font-weight:400">(1 seul)</span></div>
-        <div class="ai-chip-grid" id="aiMechanic">
-          <div class="ai-chip active" data-dim="mechanic" data-val-fr="mot inventé (néologisme pur)" data-val-en="invented word (pure neologism)">✨ Mot inventé</div>
-          <div class="ai-chip" data-dim="mechanic" data-val-fr="racine ancienne (latin, grec, sanskrit)" data-val-en="ancient root (latin, greek, sanskrit)">📜 Racine ancienne</div>
-          <div class="ai-chip" data-dim="mechanic" data-val-fr="mot existant détourné" data-val-en="existing word repurposed">🔀 Mot détourné</div>
-          <div class="ai-chip" data-dim="mechanic" data-val-fr="fusion de deux mots" data-val-en="two words merged">🔗 Fusion de mots</div>
-          <div class="ai-chip" data-dim="mechanic" data-val-fr="troncature ou contraction" data-val-en="truncation or contraction">✂️ Troncature</div>
-          <div class="ai-chip" data-dim="mechanic" data-val-fr="sonorité pure (phonesthétique)" data-val-en="pure sound (phonaesthetics)">🎵 Sonorité pure</div>
-        </div>
-      </div>
-
-      <!-- Étape 4 -->
-      <div class="ai-step">
-        <div class="ai-step-label" data-i18n="ai_step4">4 — Ton & marché cible</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px;">
-          <div>
-            <div class="slabel" style="margin-bottom:6px" data-i18n="ai_tone">Ton de marque</div>
-            <div class="ai-chip-grid" id="aiTone">
-              <div class="ai-chip active" data-dim="tone" data-val-fr="sérieux & premium" data-val-en="serious & premium">🏆 Sérieux</div>
-              <div class="ai-chip" data-dim="tone" data-val-fr="accessible & chaleureux" data-val-en="accessible & warm">🤝 Accessible</div>
-              <div class="ai-chip" data-dim="tone" data-val-fr="audacieux & disruptif" data-val-en="bold & disruptive">🚀 Audacieux</div>
-              <div class="ai-chip" data-dim="tone" data-val-fr="minimaliste & épuré" data-val-en="minimal & refined">◼ Minimaliste</div>
-              <div class="ai-chip" data-dim="tone" data-val-fr="ludique & mémorable" data-val-en="playful & memorable">😄 Ludique</div>
-            </div>
+        <div class="ai-step-label"><span class="ai-step-num">2</span><span data-i18n="ai_step2">Quelle stratégie de naming ?</span></div>
+        <div class="ai-strategy-grid" id="aiStrategy">
+          <div class="ai-strategy-card active" data-dim="strategy" data-val="invented">
+            <div class="ai-strategy-name" data-i18n="strat_invented">Marque inventée</div>
+            <div class="ai-strategy-ex">Meetic, Zalando, Spotify</div>
           </div>
-          <div>
-            <div class="slabel" style="margin-bottom:6px" data-i18n="ai_market">Marché cible</div>
-            <div class="ai-chip-grid" id="aiMarket">
-              <div class="ai-chip active" data-dim="market" data-val-fr="France" data-val-en="France">🇫🇷 France</div>
-              <div class="ai-chip" data-dim="market" data-val-fr="Europe" data-val-en="Europe">🌍 Europe</div>
-              <div class="ai-chip" data-dim="market" data-val-fr="international anglophone" data-val-en="English-speaking international">🌐 Global EN</div>
-              <div class="ai-chip" data-dim="market" data-val-fr="monde entier (toutes langues)" data-val-en="worldwide (all languages)">🌏 Mondial</div>
-            </div>
+          <div class="ai-strategy-card" data-dim="strategy" data-val="detour">
+            <div class="ai-strategy-name" data-i18n="strat_detour">Mot détourné</div>
+            <div class="ai-strategy-ex">Apple, Slack, Amazon</div>
+          </div>
+          <div class="ai-strategy-card" data-dim="strategy" data-val="hidden">
+            <div class="ai-strategy-name" data-i18n="strat_hidden">Sens caché</div>
+            <div class="ai-strategy-ex">Meetic, Reddit, Pinterest</div>
+          </div>
+          <div class="ai-strategy-card" data-dim="strategy" data-val="story">
+            <div class="ai-strategy-name" data-i18n="strat_story">Histoire courte</div>
+            <div class="ai-strategy-ex">WelcomeToTheJungle</div>
+          </div>
+          <div class="ai-strategy-card" data-dim="strategy" data-val="descriptive">
+            <div class="ai-strategy-name" data-i18n="strat_desc">Descriptif fort</div>
+            <div class="ai-strategy-ex">Booking, Canva, Stripe</div>
           </div>
         </div>
       </div>
 
-      <div class="actions" style="margin-top:20px;">
-        <button class="btn-run" id="aiBtn" onclick="generateAndCheck()" data-i18n="ai_btn">Générer les noms disponibles</button>
+      <!-- Étape 3 — Impression -->
+      <div class="ai-step">
+        <div class="ai-step-label"><span class="ai-step-num">3</span><span data-i18n="ai_step3">Quelle impression votre nom doit-il créer ?</span> <span style="color:var(--muted); font-size:12px; font-weight:400" data-i18n="ai_step3_hint">(1 choix)</span></div>
+        <div class="ai-chip-grid" id="aiImpression">
+          <div class="ai-chip active" data-dim="impression" data-val-fr="confiance" data-val-en="trust" data-i18n-chip="imp_trust">Confiance</div>
+          <div class="ai-chip" data-dim="impression" data-val-fr="élan" data-val-en="momentum" data-i18n-chip="imp_momentum">Élan</div>
+          <div class="ai-chip" data-dim="impression" data-val-fr="précision" data-val-en="precision" data-i18n-chip="imp_precision">Précision</div>
+          <div class="ai-chip" data-dim="impression" data-val-fr="douceur" data-val-en="softness" data-i18n-chip="imp_soft">Douceur</div>
+          <div class="ai-chip" data-dim="impression" data-val-fr="audace" data-val-en="boldness" data-i18n-chip="imp_bold">Audace</div>
+          <div class="ai-chip" data-dim="impression" data-val-fr="profondeur" data-val-en="depth" data-i18n-chip="imp_depth">Profondeur</div>
+          <div class="ai-chip" data-dim="impression" data-val-fr="légèreté" data-val-en="lightness" data-i18n-chip="imp_light">Légèreté</div>
+          <div class="ai-chip" data-dim="impression" data-val-fr="puissance" data-val-en="power" data-i18n-chip="imp_power">Puissance</div>
+        </div>
+      </div>
+
+      <!-- Étape 4 — Marché -->
+      <div class="ai-step">
+        <div class="ai-step-label"><span class="ai-step-num">4</span><span data-i18n="ai_step4">Marché cible</span></div>
+        <div class="ai-market-grid" id="aiMarket">
+          <div class="ai-market-btn active" data-dim="market" data-val-fr="France" data-val-en="France" data-i18n-chip="mkt_france">France</div>
+          <div class="ai-market-btn" data-dim="market" data-val-fr="Europe" data-val-en="Europe" data-i18n-chip="mkt_europe">Europe</div>
+          <div class="ai-market-btn" data-dim="market" data-val-fr="International" data-val-en="International" data-i18n-chip="mkt_intl">International</div>
+        </div>
+      </div>
+
+      <!-- Auto badge -->
+      <div style="background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:16px;">
+        <div style="font-size:11px; color:var(--muted); margin-bottom:6px;" data-i18n="ai_auto_label">BingeNaming vérifie automatiquement</div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          <span class="auto-tag" data-i18n="auto_phono">Phonosémantique</span>
+          <span class="auto-tag" data-i18n="auto_rhythm">Rythme syllabique</span>
+          <span class="auto-tag" data-i18n="auto_pronoun">Prononçabilité</span>
+          <span class="auto-tag" data-i18n="auto_conno">Connotations négatives</span>
+          <span class="auto-tag" data-i18n="auto_avail">Disponibilité .com</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-run" id="aiBtn" onclick="generateAndCheck()" data-i18n="ai_btn">Générer mes noms disponibles</button>
         <span id="aiStatus" style="font-size:13px; color:var(--muted); font-family:'DM Mono',monospace;"></span>
       </div>
       <div style="margin-top:8px; font-size:12px; font-family:'DM Mono',monospace;" id="genCounter"></div>
@@ -788,26 +820,18 @@
 
   // Chip logic
   document.addEventListener('click', function(e) {
-    const chip = e.target.closest('.ai-chip');
+    const chip = e.target.closest('.ai-chip, .ai-strategy-card, .ai-market-btn');
     if (!chip) return;
     const dim = chip.dataset.dim;
-    if (dim === 'territory') {
-      const active = document.querySelectorAll('[data-dim="territory"].active');
-      if (chip.classList.contains('active')) { chip.classList.remove('active'); }
-      else if (active.length < 2) { chip.classList.add('active'); }
-    } else {
-      document.querySelectorAll(`[data-dim="${dim}"]`).forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-    }
+    if (!dim) return;
+    document.querySelectorAll(`[data-dim="${dim}"]`).forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
   });
 
   function getDimVal(dim) {
     const chip = document.querySelector(`[data-dim="${dim}"].active`);
-    return chip ? (currentLang === 'fr' ? chip.dataset.valFr : chip.dataset.valEn) : '';
-  }
-  function getDimVals(dim) {
-    return [...document.querySelectorAll(`[data-dim="${dim}"].active`)]
-      .map(c => currentLang === 'fr' ? c.dataset.valFr : c.dataset.valEn).join(' et ');
+    if (!chip) return '';
+    return chip.dataset.val || (currentLang === 'fr' ? chip.dataset.valFr : chip.dataset.valEn) || '';
   }
 
   function switchTab(tab) {
@@ -855,10 +879,9 @@
     const desc = document.getElementById('aiDesc').value.trim();
     if (!desc) { alert(t.ai_desc_label + '…'); return; }
 
-    const territory = getDimVals('territory');
-    const mechanic = getDimVal('mechanic');
-    const tone = getDimVal('tone');
-    const market = getDimVal('market');
+    const strategy   = getDimVal('strategy');
+    const impression = getDimVal('impression');
+    const market     = getDimVal('market');
 
     const btn = document.getElementById('aiBtn');
     const status = document.getElementById('aiStatus');
@@ -881,7 +904,7 @@
         const r = await fetch('/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ description: desc, territory, mechanic, tone, market, extensions: getExtensions() })
+          body: JSON.stringify({ description: desc, strategy, impression, market, extensions: getExtensions() })
         });
         const data = await r.json();
         const rawNames = data.names || [];
