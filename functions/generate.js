@@ -61,6 +61,13 @@ FILTRES AUTOMATIQUES (non negociables) :
 - Prefixes interdits : e-, i-, my-, get-, go-, on-, be-
 - Mots generiques interdits : flow, boost, smart, fast, easy, pro, nova, next, sync, link, snap, forge, lens, beacon, prism, vault, surge, bridge, wave, peak, arc, core, axis
 
+DIVERSITE OBLIGATOIRE — regle la plus importante :
+- Aucun nom ne doit partager les 3 premieres lettres avec un autre nom de la liste
+- Aucun nom ne doit etre une simple variation d'un autre (meme radical + terminaison differente)
+- Exemples de ce qui est INTERDIT : drakso/dravso/drakvo (meme racine drak/drav), groxek/groxol (meme racine grox)
+- Chaque nom doit etre construit sur un radical phonetique DIFFERENT
+- Vise une grande variete de structures : alterne consonnes initiales, longueurs, rythmes
+
 TEST ORAL OBLIGATOIRE avant de valider un nom :
 1. "Je travaille chez [nom]" — sonne-t-il naturel ?
 2. "Tu connais [nom] ?" — est-il facile a dire ?

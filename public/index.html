@@ -909,9 +909,17 @@
         const data = await r.json();
         const rawNames = data.names || [];
         const seen = new Set([...allNames]);
+        const usedPrefixes = new Set([...allNames].map(n => n.slice(0, 3)));
         rawNames
           .map(n => n.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
-          .filter(n => n.length >= 4 && n.length <= 11 && !seen.has(n) && seen.add(n))
+          .filter(n => {
+            if (n.length < 4 || n.length > 11) return false;
+            if (seen.has(n)) return false;
+            if (usedPrefixes.has(n.slice(0, 3))) return false;
+            seen.add(n);
+            usedPrefixes.add(n.slice(0, 3));
+            return true;
+          })
           .forEach(n => allNames.add(n));
 
         // Vérifier combien sont disponibles après cette passe
