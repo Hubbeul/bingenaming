@@ -540,7 +540,7 @@
 <div class="page">
 
   <nav class="nav">
-    <div class="logo"><div class="logo-dot"></div>BingeNaming</div>
+    <div class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="cursor:pointer;"><div class="logo-dot"></div>BingeNaming</div>
     <div style="display:flex; align-items:center; gap:10px;">
       <div class="lang-switch">
         <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">FR</button>
@@ -552,9 +552,11 @@
   </nav>
 
   <div class="hero">
-    <div class="hero-kicker" data-i18n="kicker">Vérification de noms de domaine en lot</div>
-    <h1 data-i18n="h1">Vérifiez la dispo de <em>200 noms<br>de domaine</em> d'un seul coup !</h1>
-    <p class="hero-sub" data-i18n="sub">Collez votre liste ou laissez l'IA en générer pour vous. Seuls les noms disponibles s'affichent — avec un lien direct pour les enregistrer.</p>
+    <div class="hero-kicker" data-i18n="kicker">Trouvez votre nom de domaine</div>
+    <h1 data-i18n="h1">Trouvez votre nom de domaine</h1>
+    <p class="hero-sub" data-i18n="sub1">Vérifiez la dispo de 200 sites à la fois en injectant votre propre liste</p>
+    <p class="hero-sub" style="margin-top:6px;" data-i18n="sub2">Générez une liste de 10 noms disponibles<sup>*</sup> grâce à notre IA pour 10€</p>
+    <p style="font-size:11px; color:var(--muted); margin-top:10px; font-family:'DM Mono',monospace;" data-i18n="sub_note">* Basé sur les DNS actifs — un domaine sans DNS peut apparaître disponible alors qu'il est déjà enregistré. Vérifiez toujours avant d'acheter.</p>
   </div>
 
   <!-- TABS -->
@@ -730,19 +732,36 @@
 
   const i18n = {
     fr: {
-      badge: '100% gratuit · sans compte',
-      kicker: 'Vérification de noms de domaine en lot',
-      h1: 'Vérifiez la dispo de <em>200 noms<br>de domaine</em> d\'un seul coup !',
-      sub: 'Collez votre liste ou laissez l\'IA en générer pour vous. Seuls les noms disponibles s\'affichent — avec un lien direct pour les enregistrer.',
+      badge: 'Vérification gratuite · Génération IA payante',
+      kicker: 'Trouvez votre nom de domaine',
+      h1: 'Trouvez votre nom de domaine',
+      sub1: 'Vérifiez la dispo de 200 sites à la fois en injectant votre propre liste',
+      sub2: 'Générez une liste de 10 noms disponibles<sup>*</sup> grâce à notre IA pour 10€',
+      sub_note: '* Basé sur les DNS actifs — un domaine sans DNS peut apparaître disponible alors qu\'il est déjà enregistré. Vérifiez toujours avant d\'acheter.',
       tab_manual: 'Vérifier ma liste', tab_ai: 'Générer avec l\'IA',
       ext_label: 'Extensions à vérifier',
       names_label: 'Vos noms — un par ligne (200 max)',
       clear_list: 'Vider la liste', check_btn: 'Lancer la vérification',
       clear_results: 'Effacer les résultats', checking: 'Vérification en cours…',
+      ai_login_notice: 'La génération IA nécessite un compte — <strong style="color:var(--text)">1 essai gratuit offert</strong>, puis offre payante.',
+      ai_step1: 'Décrivez votre activité en quelques mots',
+      ai_step2: 'Quelle stratégie de naming ?',
+      ai_step3: 'Quelle impression votre nom doit-il créer ?',
+      ai_step3_hint: '(1 choix)',
+      ai_step4: 'Marché cible',
       ai_desc_label: 'Décrivez votre activité en quelques mots',
       ai_placeholder: 'ex: cabinet de conseil en transformation des organisations',
+      ai_btn: 'Générer mes noms disponibles',
+      ai_auto_label: 'BingeNaming vérifie automatiquement',
+      strat_invented: 'Marque inventée', strat_detour: 'Mot détourné',
+      strat_hidden: 'Sens caché', strat_story: 'Histoire courte', strat_desc: 'Descriptif fort',
+      imp_trust: 'Confiance', imp_momentum: 'Élan', imp_precision: 'Précision',
+      imp_soft: 'Douceur', imp_bold: 'Audace', imp_depth: 'Profondeur',
+      imp_light: 'Légèreté', imp_power: 'Puissance',
+      mkt_france: 'France', mkt_europe: 'Europe', mkt_intl: 'International',
+      auto_phono: 'Phonosémantique', auto_rhythm: 'Rythme syllabique',
+      auto_pronoun: 'Prononçabilité', auto_conno: 'Connotations négatives', auto_avail: 'Disponibilité .com',
       universe_label: 'Univers sémantique souhaité',
-      ai_btn: 'Générer les noms disponibles',
       available: 'Disponibles', checked: 'Vérifiés', copy_list: 'Copier la liste',
       no_results: 'Aucun domaine disponible trouvé pour cette liste.',
       disclaimer_title: 'Résultats indicatifs uniquement.',
@@ -761,19 +780,36 @@
       register: 'Enregistrer →', copied: 'Copié ✓',
     },
     en: {
-      badge: '100% free · no account needed',
-      kicker: 'Bulk domain name availability checker',
-      h1: 'Check <em>200 domain names</em><br>availability at once!',
-      sub: 'Paste your list or let AI generate names for you. Only available domains are shown — with a direct link to register them.',
+      badge: 'Free checker · AI generation from €10',
+      kicker: 'Find your domain name',
+      h1: 'Find your domain name',
+      sub1: 'Check 200 domain names availability at once by injecting your own list',
+      sub2: 'Generate 10 available names<sup>*</sup> with our AI for €10',
+      sub_note: '* Based on active DNS records — a domain without DNS may appear available even if already registered. Always verify before buying.',
       tab_manual: 'Check my list', tab_ai: 'Generate with AI',
       ext_label: 'Extensions to check',
       names_label: 'Your names — one per line (200 max)',
       clear_list: 'Clear list', check_btn: 'Check availability',
       clear_results: 'Clear results', checking: 'Checking…',
+      ai_login_notice: 'AI generation requires an account — <strong style="color:var(--text)">1 free trial offered</strong>, then paid.',
+      ai_step1: 'Describe your activity in a few words',
+      ai_step2: 'What naming strategy?',
+      ai_step3: 'What impression should your name create?',
+      ai_step3_hint: '(1 choice)',
+      ai_step4: 'Target market',
       ai_desc_label: 'Describe your business in a few words',
       ai_placeholder: 'e.g. consulting firm for digital transformation, productivity tools for managers',
+      ai_btn: 'Generate my available names',
+      ai_auto_label: 'BingeNaming automatically checks',
+      strat_invented: 'Invented brand', strat_detour: 'Repurposed word',
+      strat_hidden: 'Hidden meaning', strat_story: 'Short story', strat_desc: 'Strong descriptor',
+      imp_trust: 'Trust', imp_momentum: 'Momentum', imp_precision: 'Precision',
+      imp_soft: 'Softness', imp_bold: 'Boldness', imp_depth: 'Depth',
+      imp_light: 'Lightness', imp_power: 'Power',
+      mkt_france: 'France', mkt_europe: 'Europe', mkt_intl: 'International',
+      auto_phono: 'Phonosemantics', auto_rhythm: 'Syllabic rhythm',
+      auto_pronoun: 'Pronounceability', auto_conno: 'Negative connotations', auto_avail: '.com availability',
       universe_label: 'Preferred semantic universe',
-      ai_btn: 'Generate available names',
       available: 'Available', checked: 'Checked', copy_list: 'Copy list',
       no_results: 'No available domains found for this list.',
       disclaimer_title: 'Indicative results only.',
