@@ -550,25 +550,18 @@
       border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px;
     }
 
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-family: 'DM Mono', monospace;
-      font-size: 12px;
+    .lang-switch {
+      background: #1a1a1a; border: 1px solid #2a2a2a;
+      border-radius: 20px; padding: 3px; display: flex; gap: 2px;
     }
     .lang-btn {
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      cursor: pointer;
-      padding: 2px 4px;
-      font-family: 'DM Mono', monospace;
-      font-size: 12px;
-      letter-spacing: 0.05em;
-      transition: color 0.15s;
+      font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.06em; padding: 5px 12px; border-radius: 16px;
+      border: none; cursor: pointer; transition: all 0.15s;
+      background: #252525; color: #777;
     }
-    .lang-btn.active { color: var(--accent); font-weight: 500; }
-    .lang-btn:hover:not(.active) { color: var(--text); }
+    .lang-btn:hover:not(.active) { background: #2e2e2e; color: #bbb; }
+    .lang-btn.active { background: #b8f050; color: #0c0c0c; }
   </style>
 </head>
 <body>
@@ -579,7 +572,6 @@
     <div style="display:flex; align-items:center; gap:10px;">
       <div class="lang-switch">
         <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">FR</button>
-        <span style="color:var(--border2)">|</span>
         <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
       </div>
       <div class="nav-badge" data-i18n="badge">100% gratuit · sans compte</div>
@@ -588,7 +580,7 @@
 
   <div class="hero">
     <div class="hero-kicker" data-i18n="kicker">Trouvez votre nom de domaine</div>
-    <h1 data-i18n="h1">Trouvez votre nom de domaine</h1>
+    <h1 data-i18n="h1">Arrêtez de chercher les noms de domaine un à un !</h1>
 
     <!-- Cartes valeur -->
     <div class="hero-cards">
@@ -608,7 +600,6 @@
         <span class="hero-card-cta hero-card-cta-ai" data-i18n="card_ai_cta">Générer avec l'IA →</span>
       </div>
     </div>
-    <p style="font-size:11px; color:var(--muted); margin-top:8px; font-family:'DM Mono',monospace; text-align:center;" data-i18n="sub_note">* Basé sur les DNS actifs — vérifiez toujours avant d'acheter</p>
   </div>
 
   <!-- TABS -->
@@ -770,6 +761,10 @@
     </div>
   </div>
 
+  <div style="padding:0 0 16px; text-align:center;">
+    <p style="font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; margin:0;" data-i18n="sub_note">* Basé sur les DNS actifs — un domaine sans DNS peut apparaître disponible alors qu'il est déjà enregistré. Vérifiez toujours avant d'acheter.</p>
+  </div>
+
   <div class="footer">
     <span data-i18n="footer_dns">Vérifié via Cloudflare DNS — aucune donnée stockée</span>
     <span>© 2026 BingeNaming</span>
@@ -786,10 +781,10 @@
     fr: {
       badge: 'Vérification gratuite · Génération IA payante',
       kicker: 'Trouvez votre nom de domaine',
-      h1: 'Trouvez votre nom de domaine',
+      h1: 'Arrêtez de chercher les noms de domaine un à un !',
       card_free_tag: 'Gratuit',
       card_free_title: 'J\'ai déjà des idées',
-      card_free_desc: 'Collez jusqu\'à 200 noms et vérifiez leur disponibilité en quelques secondes.',
+      card_free_desc: 'Collez jusqu\'à 200 noms et vérifiez leur disponibilité* en quelques secondes.',
       card_free_cta: 'Vérifier ma liste →',
       card_ai_tag: 'IA experte',
       card_ai_title: 'Je veux que l\'IA m\'aide',
@@ -842,7 +837,7 @@
     en: {
       badge: 'Free checker · AI generation from €10',
       kicker: 'Find your domain name',
-      h1: 'Find your domain name',
+      h1: 'Stop checking domain names one by one!',
       card_free_tag: 'Free',
       card_free_title: 'I already have ideas',
       card_free_desc: 'Paste up to 200 names and check their availability in seconds.',
