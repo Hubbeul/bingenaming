@@ -67,15 +67,17 @@
       cursor: pointer; transition: transform 0.15s; border: 1.5px solid; text-align: left;
     }
     .hero-card:hover { transform: translateY(-2px); }
-    .hero-card-free { background: var(--surface); border-color: var(--border); }
-    .hero-card-free:hover { border-color: var(--border2); }
-    .hero-card-ai { background: #0f1a00; border-color: var(--accent); }
+    .hero-card-active { background: #0f1a00; border-color: var(--accent); }
+    .hero-card-inactive { background: var(--surface); border-color: var(--border); }
+    .hero-card-inactive:hover { border-color: var(--border2); }
     .hero-card-tag {
       font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
       font-weight: 600; margin-bottom: 8px; color: var(--muted);
       display: flex; align-items: center; gap: 8px;
     }
-    .hero-card-ai .hero-card-tag { color: var(--accent); }
+    .hero-card-active .hero-card-tag { color: var(--accent); }
+    .hero-card-inactive .hero-card-tag { color: var(--muted); }
+    .hero-card-cta-active { background: var(--accent); color: #0c0c0c; }
     .hero-price-pill {
       background: var(--accent); color: #0c0c0c;
       font-size: 11px; font-weight: 700; border-radius: 20px;
@@ -92,7 +94,6 @@
       font-size: 12px; font-weight: 600; padding: 6px 12px;
       border-radius: 6px; background: var(--surface2); color: var(--muted); display: inline-block;
     }
-    .hero-card-cta-ai { background: var(--accent); color: #0c0c0c; }
     @media (max-width: 480px) { .hero-cards { grid-template-columns: 1fr; } }
 
     .hero-kicker {
@@ -584,28 +585,22 @@
 
     <!-- Cartes valeur -->
     <div class="hero-cards">
-      <div class="hero-card hero-card-free" onclick="switchTab('manual')">
+      <div class="hero-card hero-card-active" id="card-free" onclick="switchTab('manual')">
         <div class="hero-card-tag" data-i18n="card_free_tag">Gratuit</div>
-        <div class="hero-card-title" data-i18n="card_free_title">J'ai déjà des idées</div>
-        <div class="hero-card-desc" data-i18n="card_free_desc">Collez jusqu'à 200 noms et vérifiez leur disponibilité en quelques secondes.</div>
-        <span class="hero-card-cta" data-i18n="card_free_cta">Vérifier ma liste →</span>
+        <div class="hero-card-title" data-i18n="card_free_title">J'ai déjà des idées de noms</div>
+        <div class="hero-card-desc" data-i18n="card_free_desc">Collez jusqu'à 200 noms et vérifiez leur disponibilité* en quelques secondes.</div>
+        <span class="hero-card-cta hero-card-cta-active" data-i18n="card_free_cta">Vérifier ma liste →</span>
       </div>
-      <div class="hero-card hero-card-ai" onclick="switchTab('ai')">
+      <div class="hero-card hero-card-inactive" id="card-ai" onclick="switchTab('ai')">
         <div class="hero-card-tag">
           <span data-i18n="card_ai_tag">IA experte</span>
           <span class="hero-price-pill">10€</span>
         </div>
         <div class="hero-card-title" data-i18n="card_ai_title">Je veux que l'IA m'aide</div>
         <div class="hero-card-desc" data-i18n="card_ai_desc">Notre IA génère 10 noms disponibles* calibrés sur votre activité et la phonosémantique.</div>
-        <span class="hero-card-cta hero-card-cta-ai" data-i18n="card_ai_cta">Générer avec l'IA →</span>
+        <span class="hero-card-cta" data-i18n="card_ai_cta">Générer avec l'IA →</span>
       </div>
     </div>
-  </div>
-
-  <!-- TABS -->
-  <div class="tabs">
-    <button class="tab active" id="tab-manual" onclick="switchTab('manual')" data-i18n="tab_manual">Vérifier ma liste</button>
-    <button class="tab" id="tab-ai" onclick="switchTab('ai')" data-i18n="tab_ai">Générer avec l'IA</button>
   </div>
 
   <!-- EXTENSIONS -->
@@ -619,6 +614,7 @@
     <div class="ext-btn" data-ext=".org">.org</div>
     <div class="ext-btn" data-ext=".app">.app</div>
     <div class="ext-btn" data-ext=".ai">.ai</div>
+    <div class="ext-btn ext-btn-all" data-ext="all" data-i18n="ext_all">Toutes</div>
   </div>
 
   <!-- PANEL MANUAL -->
@@ -783,7 +779,7 @@
       kicker: 'Trouvez votre nom de domaine',
       h1: 'Arrêtez de chercher les noms de domaine un à un !',
       card_free_tag: 'Gratuit',
-      card_free_title: 'J\'ai déjà des idées',
+      card_free_title: 'J\'ai déjà des idées de noms',
       card_free_desc: 'Collez jusqu\'à 200 noms et vérifiez leur disponibilité* en quelques secondes.',
       card_free_cta: 'Vérifier ma liste →',
       card_ai_tag: 'IA experte',
@@ -794,7 +790,7 @@
       sub2: 'Générez une liste de 10 noms disponibles<sup>*</sup> grâce à notre IA pour 10€',
       sub_note: '* Basé sur les DNS actifs — un domaine sans DNS peut apparaître disponible alors qu\'il est déjà enregistré. Vérifiez toujours avant d\'acheter.',
       tab_manual: 'Vérifier ma liste', tab_ai: 'Générer avec l\'IA',
-      ext_label: 'Extensions à vérifier',
+      ext_all: 'Toutes',
       names_label: 'Vos noms — un par ligne (200 max)',
       clear_list: 'Vider la liste', check_btn: 'Lancer la vérification',
       clear_results: 'Effacer les résultats', checking: 'Vérification en cours…',
@@ -850,7 +846,7 @@
       sub2: 'Generate 10 available names<sup>*</sup> with our AI for €10',
       sub_note: '* Based on active DNS records — a domain without DNS may appear available even if already registered. Always verify before buying.',
       tab_manual: 'Check my list', tab_ai: 'Generate with AI',
-      ext_label: 'Extensions to check',
+      ext_all: 'All',
       names_label: 'Your names — one per line (200 max)',
       clear_list: 'Clear list', check_btn: 'Check availability',
       clear_results: 'Clear results', checking: 'Checking…',
@@ -936,8 +932,22 @@
   function switchTab(tab) {
     document.getElementById('panel-manual').style.display = tab === 'manual' ? 'block' : 'none';
     document.getElementById('panel-ai').style.display = tab === 'ai' ? 'block' : 'none';
-    document.getElementById('tab-manual').classList.toggle('active', tab === 'manual');
-    document.getElementById('tab-ai').classList.toggle('active', tab === 'ai');
+    const cardFree = document.getElementById('card-free');
+    const cardAi = document.getElementById('card-ai');
+    const ctaFree = cardFree.querySelector('.hero-card-cta');
+    const ctaAi = cardAi.querySelector('.hero-card-cta');
+    if (tab === 'manual') {
+      cardFree.className = 'hero-card hero-card-active';
+      cardAi.className = 'hero-card hero-card-inactive';
+      ctaFree.classList.add('hero-card-cta-active');
+      ctaAi.classList.remove('hero-card-cta-active');
+    } else {
+      cardAi.className = 'hero-card hero-card-active';
+      cardFree.className = 'hero-card hero-card-inactive';
+      ctaAi.classList.add('hero-card-cta-active');
+      ctaFree.classList.remove('hero-card-cta-active');
+    }
+    if (tab === 'ai') window.scrollTo({ top: document.getElementById('panel-ai').offsetTop - 20, behavior: 'smooth' });
   }
 
   const GEN_LIMIT = 3;
@@ -1065,8 +1075,23 @@
   });
 
   function getExtensions() {
-    return [...document.querySelectorAll('#extGrid .ext-btn.active')].map(b => b.dataset.ext);
+    const active = [...document.querySelectorAll('#extGrid .ext-btn.active')].map(b => b.dataset.ext);
+    if (active.includes('all')) return ['.com','.fr','.io','.co','.net','.org','.app','.ai'];
+    return active;
   }
+
+  document.getElementById('extGrid').addEventListener('click', function(e) {
+    const btn = e.target.closest('.ext-btn');
+    if (!btn) return;
+    if (btn.dataset.ext === 'all') {
+      const allActive = btn.classList.contains('active');
+      document.querySelectorAll('#extGrid .ext-btn').forEach(b => b.classList.remove('active'));
+      if (!allActive) btn.classList.add('active');
+    } else {
+      document.querySelector('#extGrid .ext-btn[data-ext="all"]').classList.remove('active');
+      btn.classList.toggle('active');
+    }
+  });
 
   function updateCount() {
     const n = getLines().length;
