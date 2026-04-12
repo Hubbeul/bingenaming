@@ -1073,18 +1073,26 @@
       const exts = getExtensions();
       let libreCount = 0;
       let totalChecked = 0;
+      const BATCH = 10;
 
       status.textContent = currentLang === 'fr'
         ? `Vérification de ${names.length} noms…`
         : `Checking ${names.length} names…`;
 
-      for (const name of names) {
-        for (const ext of exts) {
+      // Construire la liste complète des jobs
+      const jobs = [];
+      names.forEach(name => exts.forEach(ext => jobs.push({ name, ext })));
+
+      // Traiter par batch de 10 en parallèle
+      for (let i = 0; i < jobs.length; i += BATCH) {
+        const batch = jobs.slice(i, i + BATCH);
+        document.getElementById('progressText').textContent = batch.map(j => j.name + j.ext).join(', ');
+
+        const results = await Promise.all(batch.map(({ name, ext }) => checkDomain(name, ext)));
+
+        for (const res of results) {
           totalChecked++;
           document.getElementById('s-total').textContent = totalChecked;
-          document.getElementById('progressText').textContent = `${name}${ext}`;
-
-          const res = await checkDomain(name, ext);
           if (res.ok && res.libre) {
             const row = document.createElement('div');
             row.className = 'row';
@@ -1099,6 +1107,11 @@
             document.getElementById('s-libre').textContent = libreCount;
           }
         }
+
+        // Mise à jour de la barre de progression
+        const pct = Math.round((Math.min(i + BATCH, jobs.length) / jobs.length) * 100);
+        document.getElementById('progressFill').style.width = pct + '%';
+        document.getElementById('progressPct').textContent = pct + '%';
       }
 
       document.getElementById('progressWrap').style.display = 'none';
