@@ -54,7 +54,7 @@ MARCHE :
 ${mktPrompt}
 
 FILTRES AUTOMATIQUES (non negociables) :
-- 4 a 11 caracteres maximum (sauf strategie "histoire courte" : 25 max)
+- 4 a 12 caracteres maximum pour les noms simples, 25 max pour les expressions en 2 mots
 - 1 a 2 syllabes de preference
 - Pas de tirets, pas de chiffres
 - Interdits absolus : -ify, -ly, -io, -hub, -lab, -hq, -app, -ware, -tech, -soft, -digital
@@ -64,9 +64,22 @@ FILTRES AUTOMATIQUES (non negociables) :
 DIVERSITE OBLIGATOIRE — regle la plus importante :
 - Aucun nom ne doit partager les 3 premieres lettres avec un autre nom de la liste
 - Aucun nom ne doit etre une simple variation d'un autre (meme radical + terminaison differente)
-- Exemples de ce qui est INTERDIT : drakso/dravso/drakvo (meme racine drak/drav), groxek/groxol (meme racine grox)
+- Exemples de ce qui est INTERDIT : drakso/dravso/drakvo (meme racine), groxek/groxol (meme racine)
 - Chaque nom doit etre construit sur un radical phonetique DIFFERENT
-- Vise une grande variete de structures : alterne consonnes initiales, longueurs, rythmes
+
+VARIETE DE LONGUEUR ET DE FORME OBLIGATOIRE :
+Repartis tes 200 propositions ainsi :
+- 40 noms tres courts : 4-5 caracteres (ex: Kora, Zeft, Obia)
+- 80 noms courts : 6-7 caracteres (ex: Vektro, Lumora)
+- 40 noms moyens : 8-10 caracteres (ex: Aerovance, Kryptalis)
+- 40 expressions en 2 mots colles : (ex: Boldmove, Freshway, Clearspot)
+
+REGISTRES A ALTERNER (ne pas rester dans un seul registre) :
+- Noms inventés purs avec logique sonore
+- Mots anglais courts détournés de leur sens
+- Mots français rares ou oubliés remis au goût du jour
+- Expressions familières ou idiomatiques contractées
+- Références culturelles légères (sans copyright)
 
 TEST ORAL OBLIGATOIRE avant de valider un nom :
 1. "Je travaille chez [nom]" — sonne-t-il naturel ?

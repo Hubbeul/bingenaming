@@ -1022,7 +1022,7 @@
         rawNames
           .map(n => n.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
           .filter(n => {
-            if (n.length < 4 || n.length > 11) return false;
+            if (n.length < 4 || n.length > 25) return false;
             if (seen.has(n)) return false;
             if (usedPrefixes.has(n.slice(0, 3))) return false;
             seen.add(n);
@@ -1041,7 +1041,7 @@
           ? `Vérification de ${namesList.length} noms…`
           : `Checking ${namesList.length} names…`;
 
-        await checkAll();
+        await checkAll(GUARANTEED);
 
         const libreCount = parseInt(document.getElementById('s-libre').textContent) || 0;
         if (libreCount >= GUARANTEED || attempt >= MAX_RETRIES) break;
@@ -1130,7 +1130,7 @@
     libresFound = [];
   }
 
-  async function checkAll() {
+  async function checkAll(stopAt = null) {
     const exts = getExtensions();
     if (!exts.length) { alert('Sélectionnez au moins une extension.'); return; }
     const lines = getLines();
@@ -1156,6 +1156,8 @@
     let libre = 0, done = 0;
 
     for (const { name, ext } of jobs) {
+      if (stopAt && libre >= stopAt) break;
+
       done++;
       const pct = Math.round((done / jobs.length) * 100);
       document.getElementById('progressFill').style.width = pct + '%';
