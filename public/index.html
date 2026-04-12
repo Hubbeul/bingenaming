@@ -1050,43 +1050,96 @@
     const status = document.getElementById('aiStatus');
     btn.disabled = true;
 
+    const TARGET = 10;
+    const MAX_ROUNDS = 4;
+    const resultsEl = document.getElementById('results');
+    const exts = getExtensions();
+
+    // Init affichage résultats
+    resultsEl.innerHTML = '';
+    libresFound = [];
+    document.getElementById('resultsWrap').style.display = 'block';
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('s-libre').textContent = '0';
+    document.getElementById('s-total').textContent = '0';
+    document.getElementById('panel-manual').style.display = 'block';
+    document.getElementById('panel-ai').style.display = 'none';
+    document.getElementById('progressWrap').style.display = 'block';
+
+    const checkedNames = new Set();
+    let libreCount = 0;
+    let totalChecked = 0;
+    let round = 0;
+
     try {
-      status.textContent = t.gen_status_generating;
+      while (libreCount < TARGET && round < MAX_ROUNDS) {
+        round++;
+        status.textContent = round === 1
+          ? t.gen_status_generating
+          : (currentLang === 'fr'
+              ? `${libreCount} trouvés — génération d'une nouvelle série… (${round}/${MAX_ROUNDS})`
+              : `${libreCount} found — generating new batch… (${round}/${MAX_ROUNDS})`);
 
-      const r = await fetch('/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: desc, strategy, impression, market, extensions: getExtensions() })
-      });
-
-      if (!r.ok) throw new Error('server error');
-      const data = await r.json();
-      const rawNames = data.names || [];
-
-      const seen = new Set();
-      const usedPrefixes = new Set();
-      const names = rawNames
-        .map(n => n.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
-        .filter(n => {
-          if (n.length < 4 || n.length > 25) return false;
-          if (seen.has(n)) return false;
-          if (usedPrefixes.has(n.slice(0, 3))) return false;
-          seen.add(n);
-          usedPrefixes.add(n.slice(0, 3));
-          return true;
+        const r = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: desc, strategy, impression, market, extensions: exts })
         });
 
-      if (!names.length) throw new Error('no names');
+        if (!r.ok) throw new Error('server error');
+        const data = await r.json();
+        const rawNames = data.names || [];
 
-      document.getElementById('domains').value = names.join('\n');
-      updateCount();
-      switchTab('manual');
+        // Dédoublonnage global entre les rounds
+        const seen = new Set();
+        const usedPrefixes = new Set([...checkedNames].map(n => n.slice(0, 3)));
+        const newNames = rawNames
+          .map(n => n.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
+          .filter(n => {
+            if (n.length < 4 || n.length > 25) return false;
+            if (checkedNames.has(n) || seen.has(n)) return false;
+            if (usedPrefixes.has(n.slice(0, 3))) return false;
+            seen.add(n);
+            usedPrefixes.add(n.slice(0, 3));
+            return true;
+          });
 
-      status.textContent = currentLang === 'fr'
-        ? `Vérification de ${names.length} noms…`
-        : `Checking ${names.length} names…`;
+        if (!newNames.length) break;
 
-      await checkAll(10);
+        // Vérification DNS accumulée sans reset
+        status.textContent = currentLang === 'fr'
+          ? `Vérification de ${newNames.length} noms (série ${round})…`
+          : `Checking ${newNames.length} names (batch ${round})…`;
+
+        for (const name of newNames) {
+          if (libreCount >= TARGET) break;
+          for (const ext of exts) {
+            if (libreCount >= TARGET) break;
+            checkedNames.add(name);
+            totalChecked++;
+            document.getElementById('s-total').textContent = totalChecked;
+            document.getElementById('progressText').textContent = `${name}${ext}`;
+
+            const res = await checkDomain(name, ext);
+            if (res.ok && res.libre) {
+              const row = document.createElement('div');
+              row.className = 'row';
+              row.innerHTML = `
+                <span class="domain-name">${res.domain}</span>
+                <span class="badge-libre">${i18n[currentLang].available.toLowerCase()}</span>
+                <a class="btn-register" href="${namecheapUrl(res.domain)}" target="_blank">${i18n[currentLang].register}</a>
+              `;
+              resultsEl.appendChild(row);
+              libresFound.push(res.domain);
+              libreCount++;
+              document.getElementById('s-libre').textContent = libreCount;
+            }
+          }
+        }
+      }
+
+      document.getElementById('progressWrap').style.display = 'none';
+      if (libreCount === 0) document.getElementById('emptyState').style.display = 'block';
 
       if (!isAdmin()) {
         localStorage.setItem(GEN_KEY, count + 1);
@@ -1096,6 +1149,7 @@
       status.textContent = '';
 
     } catch(e) {
+      document.getElementById('progressWrap').style.display = 'none';
       status.textContent = t.gen_error;
     }
 
