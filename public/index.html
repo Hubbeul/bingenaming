@@ -566,6 +566,31 @@
   </style>
 </head>
 <body>
+<div id="authModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:#111; border:1px solid #2a2a2a; border-radius:16px; padding:32px; max-width:380px; width:90%; text-align:center;">
+    <div style="font-size:22px; font-weight:700; color:#fff; margin-bottom:8px;" data-i18n="auth_title">Créez votre compte</div>
+    <div style="font-size:13px; color:#666; margin-bottom:24px; font-family:'DM Mono',monospace;" data-i18n="auth_subtitle">1 génération gratuite offerte · Sans carte bancaire</div>
+
+    <div id="authForm">
+      <input type="email" id="authEmail" placeholder="votre@email.com"
+        style="width:100%; background:#1a1a1a; border:1px solid #2a2a2a; border-radius:8px; padding:12px 14px; font-family:'DM Mono',monospace; font-size:13px; color:#fff; outline:none; margin-bottom:12px; box-sizing:border-box;" />
+      <button onclick="sendMagicLink()"
+        style="width:100%; background:#b8f050; border:none; border-radius:8px; padding:13px; font-size:14px; font-weight:700; color:#0c0c0c; cursor:pointer; margin-bottom:16px;">
+        <span data-i18n="auth_btn">Recevoir mon lien de connexion</span>
+      </button>
+      <div style="font-size:11px; color:#444; font-family:'DM Mono',monospace;" data-i18n="auth_note">Nous vous envoyons un lien magique — pas de mot de passe</div>
+    </div>
+
+    <div id="authSuccess" style="display:none;">
+      <div style="font-size:32px; margin-bottom:12px;">✉️</div>
+      <div style="font-size:15px; font-weight:600; color:#b8f050; margin-bottom:8px;" data-i18n="auth_sent_title">Vérifiez votre boîte mail</div>
+      <div style="font-size:12px; color:#666; font-family:'DM Mono',monospace;" data-i18n="auth_sent_body">Cliquez sur le lien pour vous connecter et lancer votre génération gratuite.</div>
+    </div>
+
+    <button onclick="closeAuthModal()" style="background:none; border:none; color:#444; font-size:12px; cursor:pointer; margin-top:16px; font-family:'DM Mono',monospace;" data-i18n="auth_cancel">Annuler</button>
+  </div>
+</div>
+
 <div class="page">
 
   <nav class="nav">
@@ -575,6 +600,7 @@
         <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">FR</button>
         <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
       </div>
+      <span id="authBadge" style="font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; cursor:pointer;" onclick="openAuthModal()"></span>
       <div class="nav-badge" data-i18n="badge">100% gratuit · sans compte</div>
     </div>
   </nav>
@@ -775,7 +801,13 @@
 
   const i18n = {
     fr: {
-      badge: 'Vérification gratuite · Génération IA payante',
+      auth_title: 'Créez votre compte',
+      auth_subtitle: '1 génération gratuite offerte · Sans carte bancaire',
+      auth_btn: 'Recevoir mon lien de connexion',
+      auth_note: 'Nous vous envoyons un lien magique — pas de mot de passe',
+      auth_sent_title: 'Vérifiez votre boîte mail',
+      auth_sent_body: 'Cliquez sur le lien pour vous connecter et lancer votre génération gratuite.',
+      auth_cancel: 'Annuler',
       kicker: 'Trouvez votre nom de domaine',
       h1: 'Arrêtez de chercher les noms de domaine un à un !',
       card_free_tag: 'Gratuit',
@@ -831,7 +863,13 @@
       register: 'Enregistrer →', copied: 'Copié ✓',
     },
     en: {
-      badge: 'Free checker · AI generation from €10',
+      auth_title: 'Create your account',
+      auth_subtitle: '1 free generation offered · No credit card',
+      auth_btn: 'Send my login link',
+      auth_note: 'We send you a magic link — no password needed',
+      auth_sent_title: 'Check your inbox',
+      auth_sent_body: 'Click the link to log in and start your free generation.',
+      auth_cancel: 'Cancel',
       kicker: 'Find your domain name',
       h1: 'Stop checking domain names one by one!',
       card_free_tag: 'Free',
@@ -973,14 +1011,28 @@
   }
 
   async function generateAndCheck() {
-    const count = parseInt(localStorage.getItem(GEN_KEY) || '0');
-    if (count >= GEN_LIMIT) {
-      alert('Vous avez utilisé vos 3 générations gratuites. Revenez demain ou contactez-nous pour un accès illimité.');
+    const t = i18n[currentLang];
+
+    // Vérification auth côté serveur
+    const authStatus = await checkAuthBeforeGenerate();
+    if (!authStatus.allowed) {
+      if (authStatus.reason === 'not_authenticated' || authStatus.reason === 'invalid_token') {
+        openAuthModal();
+        return;
+      }
+      if (authStatus.reason === 'paywall') {
+        alert(currentLang === 'fr'
+          ? 'Votre essai gratuit est utilisé. Passez à la version payante pour continuer.'
+          : 'Your free trial is used. Upgrade to continue.');
+        return;
+      }
       return;
     }
 
-    const t = i18n[currentLang];
-    if (count >= GEN_LIMIT) {
+    const count = parseInt(localStorage.getItem(GEN_KEY) || '0');
+    if (isAdmin()) {
+      // bypass total pour admin local
+    } else if (authStatus.role === 'free' && authStatus.generationCount >= 1) {
       alert(t.gen_limit_alert);
       return;
     }
@@ -1052,7 +1104,10 @@
           : `${libreCount} found, searching for more…`;
       }
 
-      if (!isAdmin()) localStorage.setItem(GEN_KEY, count + 1);
+      if (!isAdmin()) {
+        localStorage.setItem(GEN_KEY, count + 1);
+        await incrementCount();
+      }
       updateGenCounter();
       status.textContent = '';
 
@@ -1195,6 +1250,111 @@
       setTimeout(() => btn.textContent = 'Copier la liste', 2000);
     });
   }
+
+  // ── AUTH ──────────────────────────────────────────────────────────────
+  const SUPABASE_URL = 'https://lnrhagooumipzneuehqo.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_gM_P__rMGDy9pc1ZAAxTXg_bm8KD';
+  let currentUser = null;
+  let currentToken = null;
+
+  async function initAuth() {
+    try {
+      const stored = localStorage.getItem('bn_session');
+      if (!stored) return;
+      const session = JSON.parse(stored);
+      if (!session?.access_token) return;
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}`, 'apikey': SUPABASE_ANON_KEY }
+      });
+      if (res.ok) {
+        currentUser = await res.json();
+        currentToken = session.access_token;
+        updateAuthUI();
+      } else {
+        localStorage.removeItem('bn_session');
+      }
+    } catch (_) {}
+  }
+
+  function updateAuthUI() {
+    const badge = document.getElementById('authBadge');
+    if (!badge) return;
+    if (currentUser) {
+      badge.textContent = currentUser.email.split('@')[0];
+      badge.style.color = 'var(--accent)';
+    }
+  }
+
+  function openAuthModal() {
+    const m = document.getElementById('authModal');
+    m.style.display = 'flex';
+    document.getElementById('authForm').style.display = 'block';
+    document.getElementById('authSuccess').style.display = 'none';
+    setTimeout(() => document.getElementById('authEmail').focus(), 100);
+  }
+
+  function closeAuthModal() {
+    document.getElementById('authModal').style.display = 'none';
+  }
+
+  async function sendMagicLink() {
+    const email = document.getElementById('authEmail').value.trim();
+    if (!email || !email.includes('@')) return;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+        body: JSON.stringify({ email, create_user: true })
+      });
+      if (res.ok) {
+        document.getElementById('authForm').style.display = 'none';
+        document.getElementById('authSuccess').style.display = 'block';
+      }
+    } catch (_) {}
+  }
+
+  async function checkAuthBeforeGenerate() {
+    const res = await fetch('/auth-check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: currentToken })
+    });
+    return await res.json();
+  }
+
+  async function incrementCount() {
+    await fetch('/increment-count', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: currentToken })
+    });
+  }
+
+  // Intercepte le magic link au retour de l'email
+  async function handleMagicLinkCallback() {
+    const hash = window.location.hash;
+    if (!hash.includes('access_token')) return;
+    const params = new URLSearchParams(hash.replace('#', ''));
+    const token = params.get('access_token');
+    if (!token) return;
+    localStorage.setItem('bn_session', JSON.stringify({ access_token: token }));
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_ANON_KEY }
+    });
+    if (res.ok) {
+      currentUser = await res.json();
+      currentToken = token;
+      updateAuthUI();
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }
+
+  handleMagicLinkCallback();
+  initAuth();
+
+  window.openAuthModal = openAuthModal;
+  window.closeAuthModal = closeAuthModal;
+  window.sendMagicLink = sendMagicLink;
 
   window.switchTab = switchTab;
   window.generateAndCheck = generateAndCheck;
