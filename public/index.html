@@ -161,32 +161,7 @@
     .panel.active { display: block; }
 
     /* SECTION LABEL */
-    .tabs {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 24px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 4px;
-    }
-    .tab {
-      flex: 1;
-      padding: 9px 16px;
-      border-radius: 7px;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .tab.active { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-    .tab:hover:not(.active) { color: var(--text); }
-
-
+    .slabel {
       font-size: 11px;
       font-weight: 500;
       letter-spacing: 0.1em;
@@ -1065,8 +1040,6 @@
     document.getElementById('emptyState').style.display = 'none';
     document.getElementById('s-libre').textContent = '0';
     document.getElementById('s-total').textContent = '0';
-    document.getElementById('panel-manual').style.display = 'block';
-    document.getElementById('panel-ai').style.display = 'none';
     document.getElementById('progressWrap').style.display = 'block';
 
     try {

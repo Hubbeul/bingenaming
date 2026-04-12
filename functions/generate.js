@@ -40,7 +40,7 @@ function buildPrompt(description, strategy, impression, market) {
   const impPrompt = IMPRESSION_PROMPTS[impKey] || IMPRESSION_PROMPTS.confiance;
   const mktPrompt = MARKET_PROMPTS[mktKey] || MARKET_PROMPTS.france;
 
-  return `Tu es un expert senior en naming de marque avec 15 ans d'experience en agence internationale. Tu maitrise la phonosemantique, la psychologie cognitive de la memorisation et les contraintes du naming professionnel.
+  return `Tu es un expert senior en naming de marque avec 15 ans d'expérience en agence internationale. Tu maîtrises la phonosémantique, la psychologie cognitive de la mémorisation et les contraintes du naming professionnel.
 
 ACTIVITE CIBLE : "${description}"
 
@@ -53,26 +53,26 @@ ${impPrompt}
 MARCHE :
 ${mktPrompt}
 
-FILTRES AUTOMATIQUES (non negociables) :
-- 4 a 12 caracteres maximum pour les noms simples, 25 max pour les expressions en 2 mots
-- 1 a 2 syllabes de preference
+FILTRES AUTOMATIQUES (non négociables) :
+- 4 à 12 caractères maximum pour les noms simples, 25 max pour les expressions en 2 mots collés
+- 1 à 2 syllabes de préférence
 - Pas de tirets, pas de chiffres
 - Interdits absolus : -ify, -ly, -io, -hub, -lab, -hq, -app, -ware, -tech, -soft, -digital
-- Prefixes interdits : e-, i-, my-, get-, go-, on-, be-
-- Mots generiques interdits : flow, boost, smart, fast, easy, pro, nova, next, sync, link, snap, forge, lens, beacon, prism, vault, surge, bridge, wave, peak, arc, core, axis
+- Préfixes interdits : e-, i-, my-, get-, go-, on-, be-
+- Mots génériques interdits : flow, boost, smart, fast, easy, pro, nova, next, sync, link, snap, forge, lens, beacon, prism, vault, surge, bridge, wave, peak, arc, core, axis
 
-DIVERSITE OBLIGATOIRE — regle la plus importante :
-- Aucun nom ne doit partager les 3 premieres lettres avec un autre nom de la liste
-- Aucun nom ne doit etre une simple variation d'un autre (meme radical + terminaison differente)
-- Exemples de ce qui est INTERDIT : drakso/dravso/drakvo (meme racine), groxek/groxol (meme racine)
-- Chaque nom doit etre construit sur un radical phonetique DIFFERENT
+DIVERSITE OBLIGATOIRE — règle la plus importante :
+- Aucun nom ne doit partager les 3 premières lettres avec un autre nom de la liste
+- Aucun nom ne doit être une simple variation d'un autre (même radical + terminaison différente)
+- Exemples de ce qui est INTERDIT : drakso/dravso (même racine), groxek/groxol (même racine)
+- Chaque nom doit être construit sur un radical phonétique DIFFERENT
 
-VARIETE DE LONGUEUR ET DE FORME OBLIGATOIRE :
-Repartis tes 200 propositions ainsi :
-- 40 noms tres courts : 4-5 caracteres (ex: Kora, Zeft, Obia)
-- 80 noms courts : 6-7 caracteres (ex: Vektro, Lumora)
-- 40 noms moyens : 8-10 caracteres (ex: Aerovance, Kryptalis)
-- 40 expressions en 2 mots colles : (ex: Boldmove, Freshway, Clearspot)
+VARIETE DE FORME OBLIGATOIRE :
+Répartis tes 50 propositions ainsi :
+- 10 noms très courts : 4-5 caractères (ex: Kora, Zeft, Obia)
+- 25 noms courts : 6-7 caractères (ex: Vektro, Lumora)
+- 10 noms moyens : 8-10 caractères (ex: Aerovance, Kryptalis)
+- 5 expressions en 2 mots collés (ex: Boldmove, Clearspot)
 
 REGISTRES A ALTERNER (ne pas rester dans un seul registre) :
 - Noms inventés purs avec logique sonore
@@ -81,13 +81,15 @@ REGISTRES A ALTERNER (ne pas rester dans un seul registre) :
 - Expressions familières ou idiomatiques contractées
 - Références culturelles légères (sans copyright)
 
-TEST ORAL OBLIGATOIRE avant de valider un nom :
+TEST ORAL OBLIGATOIRE avant de valider chaque nom :
 1. "Je travaille chez [nom]" — sonne-t-il naturel ?
-2. "Tu connais [nom] ?" — est-il facile a dire ?
+2. "Tu connais [nom] ?" — est-il facile à dire ?
 3. "Bonjour, [nom], comment puis-je vous aider ?" — projette-t-il confiance ?
 Ne retiens que les noms qui passent les 3.
 
-FORMAT : reponds avec exactement 200 noms, un par ligne, sans extension, sans numero, sans commentaire.`;
+EXIGENCE DE QUALITE : tu génères 50 noms, pas plus. Chaque nom doit être irréprochable. Un nom médiocre ne vaut pas sa place dans la liste — supprime-le plutôt que de remplir le quota.
+
+FORMAT : réponds avec exactement 50 noms, un par ligne, sans extension, sans numéro, sans commentaire.`;
 }
 
 export async function onRequestPost(context) {
@@ -113,7 +115,7 @@ export async function onRequestPost(context) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
+        max_tokens: 8192,
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -124,7 +126,7 @@ export async function onRequestPost(context) {
     const names = text.split('\n')
       .map(l => l.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
       .filter(n => n.length >= 4 && n.length <= 25 && !seen.has(n) && seen.add(n))
-      .slice(0, 200);
+      .slice(0, 50);
 
     return new Response(JSON.stringify({ names }), {
       status: 200,
