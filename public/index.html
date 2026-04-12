@@ -600,7 +600,7 @@
         <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">FR</button>
         <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
       </div>
-      <span id="authBadge" style="font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; cursor:pointer;" onclick="openAuthModal()"></span>
+      <span id="authBadge" onclick="openAuthModal()" style="font-size:11px; font-family:'DM Mono',monospace; cursor:pointer; padding:5px 12px; border:1px solid #2a2a2a; border-radius:16px; color:#888; background:#1a1a1a; transition:all 0.15s;" data-i18n="nav_login">Se connecter</span>
       <div class="nav-badge" data-i18n="badge">100% gratuit · sans compte</div>
     </div>
   </nav>
@@ -801,6 +801,7 @@
 
   const i18n = {
     fr: {
+      nav_login: 'Se connecter',
       auth_title: 'Créez votre compte',
       auth_subtitle: '1 génération gratuite offerte · Sans carte bancaire',
       auth_btn: 'Recevoir mon lien de connexion',
@@ -863,6 +864,7 @@
       register: 'Enregistrer →', copied: 'Copié ✓',
     },
     en: {
+      nav_login: 'Sign in',
       auth_title: 'Create your account',
       auth_subtitle: '1 free generation offered · No credit card',
       auth_btn: 'Send my login link',
@@ -1048,61 +1050,43 @@
     const status = document.getElementById('aiStatus');
     btn.disabled = true;
 
-    const GUARANTEED = 10;
-    const MAX_RETRIES = 3;
-    let allNames = new Set();
-    let attempt = 0;
-
     try {
-      while (attempt < MAX_RETRIES) {
-        attempt++;
-        status.textContent = attempt === 1
-          ? t.gen_status_generating
-          : (currentLang === 'fr'
-              ? `Enrichissement en cours… (tentative ${attempt}/${MAX_RETRIES})`
-              : `Enriching results… (attempt ${attempt}/${MAX_RETRIES})`);
+      status.textContent = t.gen_status_generating;
 
-        const r = await fetch('/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ description: desc, strategy, impression, market, extensions: getExtensions() })
+      const r = await fetch('/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: desc, strategy, impression, market, extensions: getExtensions() })
+      });
+
+      if (!r.ok) throw new Error('server error');
+      const data = await r.json();
+      const rawNames = data.names || [];
+
+      const seen = new Set();
+      const usedPrefixes = new Set();
+      const names = rawNames
+        .map(n => n.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
+        .filter(n => {
+          if (n.length < 4 || n.length > 25) return false;
+          if (seen.has(n)) return false;
+          if (usedPrefixes.has(n.slice(0, 3))) return false;
+          seen.add(n);
+          usedPrefixes.add(n.slice(0, 3));
+          return true;
         });
-        const data = await r.json();
-        const rawNames = data.names || [];
-        const seen = new Set([...allNames]);
-        const usedPrefixes = new Set([...allNames].map(n => n.slice(0, 3)));
-        rawNames
-          .map(n => n.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
-          .filter(n => {
-            if (n.length < 4 || n.length > 25) return false;
-            if (seen.has(n)) return false;
-            if (usedPrefixes.has(n.slice(0, 3))) return false;
-            seen.add(n);
-            usedPrefixes.add(n.slice(0, 3));
-            return true;
-          })
-          .forEach(n => allNames.add(n));
 
-        // Vérifier combien sont disponibles après cette passe
-        const namesList = [...allNames];
-        document.getElementById('domains').value = namesList.join('\n');
-        updateCount();
-        switchTab('manual');
+      if (!names.length) throw new Error('no names');
 
-        status.textContent = currentLang === 'fr'
-          ? `Vérification de ${namesList.length} noms…`
-          : `Checking ${namesList.length} names…`;
+      document.getElementById('domains').value = names.join('\n');
+      updateCount();
+      switchTab('manual');
 
-        await checkAll(GUARANTEED);
+      status.textContent = currentLang === 'fr'
+        ? `Vérification de ${names.length} noms…`
+        : `Checking ${names.length} names…`;
 
-        const libreCount = parseInt(document.getElementById('s-libre').textContent) || 0;
-        if (libreCount >= GUARANTEED || attempt >= MAX_RETRIES) break;
-
-        // Pas assez — on relance
-        status.textContent = currentLang === 'fr'
-          ? `${libreCount} trouvés, recherche de plus…`
-          : `${libreCount} found, searching for more…`;
-      }
+      await checkAll(10);
 
       if (!isAdmin()) {
         localStorage.setItem(GEN_KEY, count + 1);
@@ -1280,8 +1264,14 @@
     const badge = document.getElementById('authBadge');
     if (!badge) return;
     if (currentUser) {
-      badge.textContent = currentUser.email.split('@')[0];
-      badge.style.color = 'var(--accent)';
+      const name = currentUser.email.split('@')[0];
+      badge.textContent = '● ' + name;
+      badge.style.color = '#b8f050';
+      badge.style.borderColor = '#b8f050';
+      badge.setAttribute('onclick', '');
+      badge.style.cursor = 'default';
+    } else {
+      badge.textContent = i18n[currentLang]?.nav_login || 'Se connecter';
     }
   }
 
