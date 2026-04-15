@@ -1,91 +1,95 @@
+const STRATEGY_PROMPTS = {
+  invented: `Crée des néologismes purs prononçables, inexistants dans tout dictionnaire. Chaque nom doit avoir une logique sonore interne défendable : une voyelle tonique identifiable, un rythme syllabique naturel (1-2 syllabes), une consonne dominante cohérente avec l'impression émotionnelle ciblée. Le nom doit sembler évident une fois entendu, comme s'il avait toujours existé. Inspire-toi de : Meetic, Zalando, Spotify, Kodak.`,
+  detour: `Prends des mots existants dans n'importe quelle langue — anglais, français, latin, langues nordiques, japonais — et transplante-les dans un contexte inattendu. Le décalage entre le sens original et le secteur crée la mémorabilité. Le mot doit être court, prononçable universellement, et créer une image mentale forte même hors de son contexte original. Inspire-toi de : Apple (pomme → tech), Slack (mou → collaboration), Amazon (fleuve → immensité).`,
+  hidden: `Construis des noms à double lecture simultanée : une couche immédiate accessible à tous, une couche profonde qui récompense ceux qui la découvrent. Fusions de mots partiels, glissements étymologiques, jeux sémantiques. Les deux lectures doivent coexister harmonieusement. Inspire-toi de : Meetic (meet+mythique), Reddit (read it), Pinterest (pin+interest), Figma (fig+ma).`,
+  story: `Génère des expressions courtes de 2 à 4 mots qui racontent quelque chose, créent une connivence immédiate avec la cible, et sonnent comme une phrase naturelle prononcée dans une conversation. L'expression doit avoir un rythme oral, une intention claire, et provoquer soit un sourire, soit une identification immédiate. Maximum 25 caractères au total. Inspire-toi de : WelcomeToTheJungle, DollarShaveClub.`,
+  descriptive: `Assemble des mots-clés qui disent clairement ce que fait l'entreprise, avec une économie de mots extrême et une sonorité forte. Évite le générique. Cherche l'évidence bien tournée : un mot simple qui dit tout sans en avoir l'air. Doit être immédiatement compréhensible et projeter la clarté et la compétence. Inspire-toi de : Booking, Canva, Stripe, Zoom.`
+};
+
+const IMPRESSION_PROMPTS = {
+  confiance: `Phonosémantique CONFIANCE : utilise des consonnes nasales (M, N) et liquides (L, R) qui résonnent. Voyelles graves et ouvertes (O, OU, A). Évite les plosives agressives. Le nom doit sonner stable et ancré, comme quelque chose sur lequel on peut s'appuyer.`,
+  trust: `Phonosemantics TRUST: use nasal (M, N) and liquid consonants (L, R) that resonate. Dark, open vowels (O, U, A). Avoid aggressive plosives. The name must sound stable and grounded.`,
+  élan: `Phonosémantique ÉLAN : commence par une fricative fluide (S, F, L, R) qui donne l'élan, termine par une plosive nette (T, K) qui donne la direction. Le mouvement doit s'entendre dans la prononciation.`,
+  momentum: `Phonosemantics MOMENTUM: start with a flowing fricative (S, F, L, R) for momentum, end with a clean plosive (T, K) for direction. Motion must be audible in pronunciation.`,
+  précision: `Phonosémantique PRÉCISION : consonnes plosives dures (K, T, P) et voyelles antérieures hautes (I, É). Court, sec, net. Doit sonner comme une décision prise sans hésitation.`,
+  precision: `Phonosemantics PRECISION: hard plosive consonants (K, T, P) with high front vowels (I, E). Short, dry, sharp. Must sound like a decision made without hesitation.`,
+  douceur: `Phonosémantique DOUCEUR : consonnes liquides et nasales (L, M, N, V). Voyelles ouvertes et rondes (A, E, O). Aucune plosive agressive. Le nom doit couler naturellement dans la bouche.`,
+  softness: `Phonosemantics SOFTNESS: liquid and nasal consonants (L, M, N, V). Open, round vowels (A, E, O). No aggressive plosives. The name must flow naturally.`,
+  audace: `Phonosémantique AUDACE : attaque plosive forte dès la première syllabe (B, D, G, K). Voyelle tonique ouverte et portante (A, O). Le nom doit frapper avant même qu'on ait fini de le prononcer.`,
+  boldness: `Phonosemantics BOLDNESS: strong plosive attack on the first syllable (B, D, G, K). Open, carrying tonic vowel (A, O). The name must strike before you've finished saying it.`,
+  profondeur: `Phonosémantique PROFONDEUR : voyelles graves et arrondies (O, U, OU) avec résonance nasale. Doit résonner, pas claquer. Terminaison ouverte, pas coupée.`,
+  depth: `Phonosemantics DEPTH: dark, rounded vowels (O, U) with nasal resonance. Must resonate, not snap. Open ending, not cut short.`,
+  légèreté: `Phonosémantique LÉGÈRETÉ : consonnes légères (F, V, L, S). Voyelles hautes et claires (I, É, E). Peu de syllabes, tonalité haute. Doit sembler léger à prononcer.`,
+  lightness: `Phonosemantics LIGHTNESS: light consonants (F, V, L, S). High, clear vowels (I, E). Few syllables, high register. Must feel effortless to say.`,
+  puissance: `Phonosémantique PUISSANCE : attaque plosive forte (B, K, D, G), voyelle tonique grave (O, A), terminaison nette. Une ou deux syllabes maximum. Doit imposer dès le premier phonème.`,
+  power: `Phonosemantics POWER: strong plosive attack (B, K, D, G), dark tonic vowel (O, A), clean ending. One or two syllables max. Must impose from the first phoneme.`
+};
+
+const MARKET_PROMPTS = {
+  france: `Marché FRANCE : prononçable naturellement par un francophone sans effort ni hésitation. Évite : TH anglais, SH, TZ, groupes consonantiques inexistants en français. Teste mentalement : un Français de 40 ans pourrait-il le dire sans qu'on le lui épelle ?`,
+  europe: `Market EUROPE: pronounceable without effort in French, English, Spanish, German, Italian. No sounds specific to one language. Avoid: French nasal vowels (an, on, in), French R, closed French U, heavy German CH.`,
+  international: `Market INTERNATIONAL: pronounceable in all major world languages. Avoid: French R, closed French U, nasal sounds, L/R distinction (difficult in Mandarin/Japanese), complex consonant clusters, ambiguous long vowels, sounds absent from Arabic (P is rare, V absent).`
+};
+
 function buildPrompt(description, strategy, impression, market) {
-  return `Tu es un expert senior en naming de marques et de noms de domaine.
+  const stratKey = strategy || 'invented';
+  const impKey = impression || 'confiance';
+  const mktKey = (market || 'france').toLowerCase();
 
-Ta mission :
-Générer des noms de domaine de haute qualité pour des entrepreneurs, freelances, associations, créateurs de projets ou petites entreprises.
+  const stratPrompt = STRATEGY_PROMPTS[stratKey] || STRATEGY_PROMPTS.invented;
+  const impPrompt = IMPRESSION_PROMPTS[impKey] || IMPRESSION_PROMPTS.confiance;
+  const mktPrompt = MARKET_PROMPTS[mktKey] || MARKET_PROMPTS.france;
 
-Le but n'est pas de produire des mots aléatoires.
-Le but est de proposer des noms :
-* crédibles comme marque
-* agréables à l'oreille
-* faciles à prononcer
-* mémorisables
-* cohérents avec l'activité décrite
-* compatibles avec un usage en nom de domaine
-* avec une probabilité raisonnable d'être encore disponibles
+  return `Tu es un expert senior en naming de marque avec 15 ans d'expérience en agence internationale. Tu maîtrises la phonosémantique, la psychologie cognitive de la mémorisation et les contraintes du naming professionnel.
 
-PARAMÈTRES UTILISATEUR
+ACTIVITE CIBLE : "${description}"
 
-Description de l'activité : ${description}
+STRATEGIE DE NAMING :
+${stratPrompt}
 
-Stratégie de naming choisie : ${strategy || 'marque_inventee'}
+PHONOSEMANTIQUE :
+${impPrompt}
 
-Impression recherchée : ${impression || 'confiance'}
+MARCHE :
+${mktPrompt}
 
-Marché cible : ${market || 'france'}
+FILTRES AUTOMATIQUES (non négociables) :
+- 4 à 12 caractères maximum pour les noms simples, 25 max pour les expressions en 2 mots collés
+- 1 à 2 syllabes de préférence
+- Pas de tirets, pas de chiffres
+- Interdits absolus : -ify, -ly, -io, -hub, -lab, -hq, -app, -ware, -tech, -soft, -digital
+- Préfixes interdits : e-, i-, my-, get-, go-, on-, be-
+- Mots génériques interdits : flow, boost, smart, fast, easy, pro, nova, next, sync, link, snap, forge, lens, beacon, prism, vault, surge, bridge, wave, peak, arc, core, axis
 
-CONTRAINTES GÉNÉRALES
+DIVERSITE OBLIGATOIRE — règle la plus importante :
+- Aucun nom ne doit partager les 3 premières lettres avec un autre nom de la liste
+- Aucun nom ne doit être une simple variation d'un autre (même radical + terminaison différente)
+- Exemples de ce qui est INTERDIT : drakso/dravso (même racine), groxek/groxol (même racine)
+- Chaque nom doit être construit sur un radical phonétique DIFFERENT
 
-1. Tous les noms doivent être adaptés à un nom de domaine, en priorité .com.
-2. Évite les noms trop longs. Vise idéalement 5 à 10 lettres.
-3. Évite les tirets, chiffres, orthographes confuses, doubles lettres inutiles.
-4. Évite les noms trop proches de marques mondialement connues.
-5. Évite les noms laids, bancals, imprononçables ou composés de syllabes qui sonnent faux.
-6. Évite les noms trop génériques sauf si la stratégie est "descriptif_fort".
-7. Évite les noms trop probablement déjà pris : mots du dictionnaire très simples, noms de startups célèbres, assemblages très évidents.
-8. Privilégie des noms fluides, distinctifs, cohérents avec le territoire de marque.
+VARIETE DE FORME OBLIGATOIRE :
+Répartis tes 50 propositions ainsi :
+- 10 noms très courts : 4-5 caractères (ex: Kora, Zeft, Obia)
+- 25 noms courts : 6-7 caractères (ex: Vektro, Lumora)
+- 10 noms moyens : 8-10 caractères (ex: Aerovance, Kryptalis)
+- 5 expressions en 2 mots collés (ex: Boldmove, Clearspot)
 
-ADAPTATION SELON LA STRATÉGIE
+REGISTRES A ALTERNER (ne pas rester dans un seul registre) :
+- Noms inventés purs avec logique sonore
+- Mots anglais courts détournés de leur sens
+- Mots français rares ou oubliés remis au goût du jour
+- Expressions familières ou idiomatiques contractées
+- Références culturelles légères (sans copyright)
 
-Si stratégie = marque_inventee : crée des noms inventés mais naturels, élégants, crédibles. Éviter les suites de syllabes absurdes.
-Si stratégie = mot_detourne : partir d'un mot existant, le transformer subtilement, conserver une familiarité.
-Si stratégie = sens_cache : suggérer indirectement une idée ou une valeur. Éviter le trop opaque.
-Si stratégie = histoire_courte : noms évocateurs, narratifs, avec un imaginaire léger. Rester courts.
-Si stratégie = descriptif_fort : noms lisibles et immédiatement compréhensibles, avec une qualité de marque suffisante.
+TEST ORAL OBLIGATOIRE avant de valider chaque nom :
+1. "Je travaille chez [nom]" — sonne-t-il naturel ?
+2. "Tu connais [nom] ?" — est-il facile à dire ?
+3. "Bonjour, [nom], comment puis-je vous aider ?" — projette-t-il confiance ?
+Ne retiens que les noms qui passent les 3.
 
-ADAPTATION SELON L'IMPRESSION
+EXIGENCE DE QUALITE : tu génères 50 noms, pas plus. Chaque nom doit être irréprochable. Un nom médiocre ne vaut pas sa place dans la liste — supprime-le plutôt que de remplir le quota.
 
-confiance → stabilité, clarté, sérieux, équilibre sonore
-elan → énergie, mouvement, dynamique, rythme
-precision → netteté, structure, maîtrise, rigueur
-douceur → fluidité, rondeur, simplicité, chaleur
-audace → singularité, tension créative, impact
-profondeur → densité, élégance, gravité, relief
-legerete → souplesse, simplicité, fraîcheur
-puissance → assise, intensité, force, autorité
-
-ADAPTATION SELON LE MARCHÉ
-
-france → faciles à lire et prononcer pour un francophone
-europe → prononçables dans plusieurs langues européennes
-international → très fluides, simples, courts, robustes en anglais
-
-PROCESSUS OBLIGATOIRE (sans afficher les brouillons) :
-1. Analyse le territoire de marque implicite.
-2. Génère un grand pool interne de noms potentiels.
-3. Élimine les noms laids, absurdes, artificiels, banals, trop proches d'une marque connue.
-4. Classe les meilleurs par qualité de marque.
-5. Retourne seulement les 60 meilleurs.
-
-FORMAT DE SORTIE
-
-Retourne exactement 60 noms en JSON, répartis en 3 groupes :
-* 20 noms "safe" : les plus crédibles, sobres, exploitables
-* 20 noms "distinctif" : plus originaux mais encore sérieux
-* 20 noms "creatif" : plus audacieux, tout en restant prononçables
-
-Pour chaque proposition :
-{
-  "name": "le nom seul sans extension",
-  "style": "safe" | "distinctif" | "creatif",
-  "short_reason": "5 à 10 mots expliquant l'intérêt du nom"
-}
-
-IMPORTANT :
-* Retourne UNIQUEMENT le tableau JSON, rien d'autre
-* Pas de commentaires, pas de markdown, pas de backticks
-* Aucun doublon
-* Aucun nom volontairement absurde`;
+FORMAT : réponds avec exactement 50 noms, un par ligne, sans extension, sans numéro, sans commentaire.`;
 }
 
 export async function onRequestPost(context) {
@@ -95,7 +99,7 @@ export async function onRequestPost(context) {
 
     if (!description) {
       return new Response(JSON.stringify({ error: 'Description manquante' }), {
-        status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+        status: 400, headers: { 'Content-Type': 'application/json' }
       });
     }
 
@@ -111,36 +115,20 @@ export async function onRequestPost(context) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
+        max_tokens: 8192,
         messages: [{ role: 'user', content: prompt }]
       })
     });
 
     const data = await res.json();
-    const text = (data.content?.[0]?.text || '').trim();
-
-    let names = [];
-    try {
-      const cleaned = text.replace(/```json|```/g, '').trim();
-      const parsed = JSON.parse(cleaned);
-      names = Array.isArray(parsed) ? parsed : [];
-    } catch (e) {
-      // Fallback : extraire les noms bruts si JSON invalide
-      const fallback = text.split('\n')
-        .map(l => l.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
-        .filter(n => n.length >= 4 && n.length <= 12);
-      names = fallback.map(n => ({ name: n, style: 'safe', short_reason: '' }));
-    }
-
-    // Dédoublonnage
+    const text = data.content?.[0]?.text || '';
     const seen = new Set();
-    const unique = names.filter(n => {
-      if (!n.name || seen.has(n.name.toLowerCase())) return false;
-      seen.add(n.name.toLowerCase());
-      return true;
-    });
+    const names = text.split('\n')
+      .map(l => l.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
+      .filter(n => n.length >= 4 && n.length <= 25 && !seen.has(n) && seen.add(n))
+      .slice(0, 50);
 
-    return new Response(JSON.stringify({ names: unique }), {
+    return new Response(JSON.stringify({ names }), {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
     });
