@@ -583,12 +583,11 @@
         <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
       </div>
       <span id="authBadge" onclick="openAuthModal()" style="font-size:11px; font-family:'DM Mono',monospace; cursor:pointer; padding:5px 12px; border:1px solid #2a2a2a; border-radius:16px; color:#888; background:#1a1a1a; transition:all 0.15s;" data-i18n="nav_login">Se connecter</span>
-      <div class="nav-badge" data-i18n="badge">100% gratuit · sans compte</div>
+      <div class="nav-badge" data-i18n="badge">Vérification gratuite · IA à venir</div>
     </div>
   </nav>
 
   <div class="hero">
-    <div class="hero-kicker" data-i18n="kicker">Trouvez votre nom de domaine</div>
     <h1 data-i18n="h1">Arrêtez de chercher les noms de domaine un à un !</h1>
 
     <!-- Cartes valeur -->
@@ -596,17 +595,17 @@
       <div class="hero-card hero-card-active" id="card-free" onclick="switchTab('manual')">
         <div class="hero-card-tag" data-i18n="card_free_tag">Gratuit</div>
         <div class="hero-card-title" data-i18n="card_free_title">J'ai déjà des idées de noms</div>
-        <div class="hero-card-desc" data-i18n="card_free_desc">Collez jusqu'à 200 noms et vérifiez leur disponibilité* en quelques secondes.</div>
+        <div class="hero-card-desc" data-i18n="card_free_desc">Collez jusqu'à <strong style="color:var(--accent);font-size:15px;">200 noms</strong> et vérifiez leur disponibilité* en quelques secondes.</div>
         <span class="hero-card-cta hero-card-cta-active" data-i18n="card_free_cta">Vérifier ma liste →</span>
       </div>
-      <div class="hero-card hero-card-inactive" id="card-ai" onclick="switchTab('ai')">
+      <div class="hero-card hero-card-inactive" id="card-ai" style="opacity:0.55; cursor:default; pointer-events:none;">
         <div class="hero-card-tag">
           <span data-i18n="card_ai_tag">IA experte</span>
-          <span class="hero-price-pill">10€</span>
+          <span style="font-size:10px; font-weight:700; background:var(--surface2); color:var(--muted); border:1px solid var(--border2); border-radius:20px; padding:2px 9px;">Bientôt</span>
         </div>
         <div class="hero-card-title" data-i18n="card_ai_title">Je veux que l'IA m'aide</div>
-        <div class="hero-card-desc" data-i18n="card_ai_desc">Notre IA génère 10 noms disponibles* calibrés sur votre activité et la phonosémantique.</div>
-        <span class="hero-card-cta" data-i18n="card_ai_cta">Générer avec l'IA →</span>
+        <div class="hero-card-desc" data-i18n="card_ai_desc">Notre IA génère des noms disponibles calibrés sur votre activité et la phonosémantique.</div>
+        <span class="hero-card-cta" data-i18n="card_ai_cta">Bientôt disponible</span>
       </div>
     </div>
   </div>
@@ -791,7 +790,7 @@
       auth_sent_title: 'Vérifiez votre boîte mail',
       auth_sent_body: 'Cliquez sur le lien pour vous connecter et lancer votre génération gratuite.',
       auth_cancel: 'Annuler',
-      kicker: 'Trouvez votre nom de domaine',
+      kicker: '',
       h1: 'Arrêtez de chercher les noms de domaine un à un !',
       card_free_tag: 'Gratuit',
       card_free_title: 'J\'ai déjà des idées de noms',
@@ -854,7 +853,7 @@
       auth_sent_title: 'Check your inbox',
       auth_sent_body: 'Click the link to log in and start your free generation.',
       auth_cancel: 'Cancel',
-      kicker: 'Find your domain name',
+      kicker: '',
       h1: 'Stop checking domain names one by one!',
       card_free_tag: 'Free',
       card_free_title: 'I already have ideas',
@@ -863,7 +862,7 @@
       card_ai_tag: 'Expert AI',
       card_ai_title: 'I want AI to help me',
       card_ai_desc: 'Our AI generates 10 available names* calibrated on your activity and phonosemantics.',
-      card_ai_cta: 'Generate with AI →',
+      card_ai_cta: 'Coming soon',
       sub1: 'Check 200 domain names availability at once by injecting your own list',
       sub2: 'Generate 10 available names<sup>*</sup> with our AI for €10',
       sub_note: '* Based on active DNS records — a domain without DNS may appear available even if already registered. Always verify before buying.',
