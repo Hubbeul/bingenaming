@@ -1057,7 +1057,7 @@
     const status = document.getElementById('aiStatus');
     btn.disabled = true;
 
-    // Prépare l'affichage
+    // Prépare l'affichage — garde le panel IA visible
     const resultsEl = document.getElementById('results');
     resultsEl.innerHTML = '';
     libresFound = [];
@@ -1065,9 +1065,10 @@
     document.getElementById('emptyState').style.display = 'none';
     document.getElementById('s-libre').textContent = '0';
     document.getElementById('s-total').textContent = '0';
-    document.getElementById('panel-manual').style.display = 'block';
-    document.getElementById('panel-ai').style.display = 'none';
     document.getElementById('progressWrap').style.display = 'block';
+    // Vide le textarea pour ne pas afficher les anciens noms manuels
+    document.getElementById('domains').value = '';
+    updateCount();
 
     try {
       status.textContent = t.gen_status_generating;
@@ -1080,6 +1081,7 @@
 
       if (!r.ok) throw new Error('server error');
       const data = await r.json();
+      console.log('AI response:', JSON.stringify(data).slice(0, 500));
       const rawNames = data.names || [];
 
       // rawNames est maintenant un tableau d'objets {name, style, short_reason}
