@@ -1218,6 +1218,8 @@
     document.getElementById('results').innerHTML = '';
     document.getElementById('resultsWrap').style.display = 'none';
     document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('s-libre').textContent = '0';
+    document.getElementById('s-total').textContent = '0';
     libresFound = [];
   }
 
@@ -1229,14 +1231,10 @@
 
     const btn = document.getElementById('checkBtn');
     btn.disabled = true;
-    libresFound = [];
 
     const resultsEl = document.getElementById('results');
-    resultsEl.innerHTML = '';
     document.getElementById('emptyState').style.display = 'none';
     document.getElementById('resultsWrap').style.display = 'block';
-    document.getElementById('s-libre').textContent = '0';
-    document.getElementById('s-total').textContent = '0';
 
     const progressWrap = document.getElementById('progressWrap');
     progressWrap.style.display = 'block';
@@ -1244,7 +1242,13 @@
     const jobs = [];
     lines.forEach(name => exts.forEach(ext => jobs.push({ name, ext })));
 
-    let libre = 0, done = 0;
+    // Récupère les domaines déjà affichés pour dédoublonner
+    const existingDomains = new Set(libresFound);
+    let libre = libresFound.length;
+    let done = 0;
+
+    document.getElementById('s-libre').textContent = libre;
+    document.getElementById('s-total').textContent = '0';
 
     for (const { name, ext } of jobs) {
       if (stopAt && libre >= stopAt) break;
@@ -1257,7 +1261,7 @@
 
       const res = await checkDomain(name, ext);
 
-      if (res.ok && res.libre) {
+      if (res.ok && res.libre && !existingDomains.has(res.domain)) {
         const row = document.createElement('div');
         row.className = 'row';
         row.innerHTML = `
@@ -1267,6 +1271,7 @@
         `;
         resultsEl.appendChild(row);
         libresFound.push(res.domain);
+        existingDomains.add(res.domain);
         libre++;
         document.getElementById('s-libre').textContent = libre;
       }
@@ -1274,7 +1279,7 @@
     }
 
     progressWrap.style.display = 'none';
-    if (libre === 0) document.getElementById('emptyState').style.display = 'block';
+    if (libresFound.length === 0) document.getElementById('emptyState').style.display = 'block';
     btn.disabled = false;
   }
 
