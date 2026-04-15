@@ -161,7 +161,32 @@
     .panel.active { display: block; }
 
     /* SECTION LABEL */
-    .slabel {
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px;
+    }
+    .tab {
+      flex: 1;
+      padding: 9px 16px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab.active { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .tab:hover:not(.active) { color: var(--text); }
+
+
       font-size: 11px;
       font-weight: 500;
       letter-spacing: 0.1em;
@@ -310,9 +335,9 @@
     .results-list { display: flex; flex-direction: column; gap: 4px; }
 
     .row {
-      display: grid;
-      grid-template-columns: 1fr auto auto;
+      display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 12px;
       padding: 10px 14px;
       border-radius: 8px;
@@ -631,7 +656,7 @@
       <div class="slabel" style="margin-bottom:10px" data-i18n="names_label">Vos noms — un par ligne (200 max)</div>
       <textarea id="domains" placeholder="metanoia&#10;tropos&#10;dunamis&#10;pragma&#10;tekton&#10;ergone" oninput="updateCount()"></textarea>
       <div class="limit-bar">
-        <button class="btn-sec" style="font-size:12px; padding:4px 12px; border-color:var(--border2); color:var(--text);" onclick="document.getElementById('domains').value=''; updateCount();" data-i18n="clear_list">Vider la liste</button>
+        <button class="btn-sec" style="font-size:12px; padding:4px 12px;" onclick="document.getElementById('domains').value=''; updateCount();" data-i18n="clear_list">Vider la liste</button>
         <span><span id="name-count" class="count-num">0</span> / 200</span>
       </div>
       <div class="actions">
@@ -1040,6 +1065,8 @@
     document.getElementById('emptyState').style.display = 'none';
     document.getElementById('s-libre').textContent = '0';
     document.getElementById('s-total').textContent = '0';
+    document.getElementById('panel-manual').style.display = 'block';
+    document.getElementById('panel-ai').style.display = 'none';
     document.getElementById('progressWrap').style.display = 'block';
 
     try {
@@ -1055,51 +1082,51 @@
       const data = await r.json();
       const rawNames = data.names || [];
 
-      // Dédoublonnage
+      // rawNames est maintenant un tableau d'objets {name, style, short_reason}
       const seen = new Set();
-      const usedPrefixes = new Set();
-      const names = rawNames
-        .map(n => n.trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
+      const nameObjects = rawNames
+        .filter(n => n && n.name)
+        .map(n => ({ ...n, name: n.name.trim().toLowerCase().replace(/[^a-z0-9]/g, '') }))
         .filter(n => {
-          if (n.length < 4 || n.length > 25) return false;
-          if (seen.has(n) || usedPrefixes.has(n.slice(0, 3))) return false;
-          seen.add(n);
-          usedPrefixes.add(n.slice(0, 3));
+          if (n.name.length < 4 || n.name.length > 20) return false;
+          if (seen.has(n.name)) return false;
+          seen.add(n.name);
           return true;
         });
 
-      if (!names.length) throw new Error('no names');
+      if (!nameObjects.length) throw new Error('no names');
 
       const exts = getExtensions();
       let libreCount = 0;
       let totalChecked = 0;
-      const BATCH = 10;
 
       status.textContent = currentLang === 'fr'
-        ? `Vérification de ${names.length} noms…`
-        : `Checking ${names.length} names…`;
+        ? `Vérification de ${nameObjects.length} noms…`
+        : `Checking ${nameObjects.length} names…`;
 
-      // Construire la liste complète des jobs
-      const jobs = [];
-      names.forEach(name => exts.forEach(ext => jobs.push({ name, ext })));
-
-      // Traiter par batch de 10 en parallèle
-      for (let i = 0; i < jobs.length; i += BATCH) {
-        const batch = jobs.slice(i, i + BATCH);
-        document.getElementById('progressText').textContent = batch.map(j => j.name + j.ext).join(', ');
-
-        const results = await Promise.all(batch.map(({ name, ext }) => checkDomain(name, ext)));
-
-        for (const res of results) {
+      for (const obj of nameObjects) {
+        for (const ext of exts) {
           totalChecked++;
           document.getElementById('s-total').textContent = totalChecked;
+          document.getElementById('progressText').textContent = `${obj.name}${ext}`;
+
+          const res = await checkDomain(obj.name, ext);
           if (res.ok && res.libre) {
+            const styleLabel = obj.style === 'creatif' ? '✦' : obj.style === 'distinctif' ? '◆' : '';
             const row = document.createElement('div');
             row.className = 'row';
             row.innerHTML = `
-              <span class="domain-name">${res.domain}</span>
-              <span class="badge-libre">${i18n[currentLang].available.toLowerCase()}</span>
-              <a class="btn-register" href="${namecheapUrl(res.domain)}" target="_blank">${i18n[currentLang].register}</a>
+              <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span class="domain-name">${res.domain}</span>
+                  ${styleLabel ? `<span style="font-size:10px; color:var(--accent); opacity:0.7;">${styleLabel}</span>` : ''}
+                </div>
+                ${obj.short_reason ? `<span style="font-size:11px; color:var(--muted); font-family:'DM Mono',monospace;">${obj.short_reason}</span>` : ''}
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                <span class="badge-libre">${i18n[currentLang].available.toLowerCase()}</span>
+                <a class="btn-register" href="${namecheapUrl(res.domain)}" target="_blank">${i18n[currentLang].register}</a>
+              </div>
             `;
             resultsEl.appendChild(row);
             libresFound.push(res.domain);
@@ -1107,11 +1134,6 @@
             document.getElementById('s-libre').textContent = libreCount;
           }
         }
-
-        // Mise à jour de la barre de progression
-        const pct = Math.round((Math.min(i + BATCH, jobs.length) / jobs.length) * 100);
-        document.getElementById('progressFill').style.width = pct + '%';
-        document.getElementById('progressPct').textContent = pct + '%';
       }
 
       document.getElementById('progressWrap').style.display = 'none';
@@ -1134,7 +1156,14 @@
 
 
 
-  // Extensions — listener unique géré par délégation ci-dessous
+  // Extensions
+  document.querySelectorAll('#extGrid .ext-btn').forEach(btn => {
+    btn.addEventListener('click', () => btn.classList.toggle('active'));
+  });
+
+  document.querySelectorAll('#aiOptions .ext-btn').forEach(btn => {
+    btn.addEventListener('click', () => btn.classList.toggle('active'));
+  });
 
   function getExtensions() {
     const active = [...document.querySelectorAll('#extGrid .ext-btn.active')].map(b => b.dataset.ext);
