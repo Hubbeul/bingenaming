@@ -631,7 +631,7 @@
       <div class="slabel" style="margin-bottom:10px" data-i18n="names_label">Vos noms — un par ligne (200 max)</div>
       <textarea id="domains" placeholder="metanoia&#10;tropos&#10;dunamis&#10;pragma&#10;tekton&#10;ergone" oninput="updateCount()"></textarea>
       <div class="limit-bar">
-        <button class="btn-sec" style="font-size:12px; padding:4px 12px;" onclick="document.getElementById('domains').value=''; updateCount();" data-i18n="clear_list">Vider la liste</button>
+        <button class="btn-sec" style="font-size:12px; padding:4px 12px; border-color:var(--border2); color:var(--text);" onclick="document.getElementById('domains').value=''; updateCount();" data-i18n="clear_list">Vider la liste</button>
         <span><span id="name-count" class="count-num">0</span> / 200</span>
       </div>
       <div class="actions">
@@ -1134,14 +1134,7 @@
 
 
 
-  // Extensions
-  document.querySelectorAll('#extGrid .ext-btn').forEach(btn => {
-    btn.addEventListener('click', () => btn.classList.toggle('active'));
-  });
-
-  document.querySelectorAll('#aiOptions .ext-btn').forEach(btn => {
-    btn.addEventListener('click', () => btn.classList.toggle('active'));
-  });
+  // Extensions — listener unique géré par délégation ci-dessous
 
   function getExtensions() {
     const active = [...document.querySelectorAll('#extGrid .ext-btn.active')].map(b => b.dataset.ext);
