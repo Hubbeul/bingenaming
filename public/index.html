@@ -850,7 +850,7 @@
       gen_status_done: (n) => `${n} noms générés — vérification en cours…`,
       gen_error: 'Erreur — réessayez.',
       gen_limit_alert: 'Vous avez utilisé vos 3 générations gratuites. Revenez demain ou contactez-nous pour un accès illimité.',
-      register: 'Enregistrer →', copied: 'Copié ✓',
+      register: 'Enregistrer sur', copied: 'Copié ✓',
     },
     en: {
       nav_login: 'Sign in',
@@ -913,7 +913,7 @@
       gen_status_done: (n) => `${n} names generated — checking availability…`,
       gen_error: 'Error — please try again.',
       gen_limit_alert: 'You have used your 3 free generations. Come back tomorrow or contact us for unlimited access.',
-      register: 'Register →', copied: 'Copied ✓',
+      register: 'Register on', copied: 'Copied ✓',
     }
   };
 
@@ -1105,7 +1105,7 @@
             row.innerHTML = `
               <span class="domain-name">${res.domain}</span>
               <span class="badge-libre">${i18n[currentLang].available.toLowerCase()}</span>
-              <a class="btn-register" href="${registrarUrl(res.domain)}" target="_blank" onclick="trackClick('register_click', currentLang === 'fr' ? 'ionos' : 'namecheap', currentLang, '${res.domain}')">${i18n[currentLang].register}</a>
+              <a class="btn-register" href="${registrarUrl(res.domain)}" target="_blank" onclick="trackClick('register_click', currentLang === 'fr' ? 'ionos' : 'namecheap', currentLang, '${res.domain}')">${i18n[currentLang].register} ${registrarName()}</a>
             `;
             resultsEl.appendChild(row);
             libresFound.push(res.domain);
@@ -1189,12 +1189,16 @@
 
   function registrarUrl(domain) {
     if (currentLang === 'fr') {
-      // IONOS FR — remplace IONOS_AFFILIATE_ID par ton ID une fois obtenu
+      // IONOS FR — lien affilié à ajouter quand disponible
       return `https://www.ionos.fr/domaines/enregistrement-domaine?domaincheckInput=${domain}`;
     } else {
-      // Namecheap EN — remplace par ton lien affilié une fois obtenu
-      return `https://www.namecheap.com/domains/registration/results/?domain=${domain}`;
+      // Namecheap EN — lien affilié Impact avec ID rEGyOd
+      return `https://namecheap.pxf.io/rEGyOd?url=https://www.namecheap.com/domains/registration/results/?domain=${domain}`;
     }
+  }
+
+  function registrarName() {
+    return currentLang === 'fr' ? 'IONOS' : 'Namecheap';
   }
 
   function trackClick(eventName, registrar, lang, domain) {
@@ -1261,7 +1265,7 @@
         row.innerHTML = `
           <span class="domain-name">${res.domain}</span>
           <span class="badge-libre">${i18n[currentLang].available.toLowerCase()}</span>
-          <a class="btn-register" href="${registrarUrl(res.domain)}" target="_blank" onclick="trackClick('register_click', currentLang === 'fr' ? 'ionos' : 'namecheap', currentLang, '${res.domain}')">${i18n[currentLang].register}</a>
+          <a class="btn-register" href="${registrarUrl(res.domain)}" target="_blank" onclick="trackClick('register_click', currentLang === 'fr' ? 'ionos' : 'namecheap', currentLang, '${res.domain}')">${i18n[currentLang].register} ${registrarName()}</a>
         `;
         resultsEl.appendChild(row);
         libresFound.push(res.domain);
