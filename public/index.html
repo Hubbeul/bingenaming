@@ -6,6 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BingeNaming — Vérifiez 200 noms d'un seul coup</title>
   <meta name="description" content="BingeNaming vérifie la disponibilité de 200 noms de domaine en une seule recherche. Gratuit, sans compte, résultats en temps réel." />
+  <!-- Google Analytics GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y6JMFPGYF7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-Y6JMFPGYF7');
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <style>
@@ -1042,6 +1050,7 @@
     document.getElementById('progressWrap').style.display = 'block';
 
     try {
+      trackClick('ai_generate', 'none', currentLang, '');
       status.textContent = t.gen_status_generating;
 
       const r = await fetch('/generate', {
@@ -1096,7 +1105,7 @@
             row.innerHTML = `
               <span class="domain-name">${res.domain}</span>
               <span class="badge-libre">${i18n[currentLang].available.toLowerCase()}</span>
-              <a class="btn-register" href="${namecheapUrl(res.domain)}" target="_blank">${i18n[currentLang].register}</a>
+              <a class="btn-register" href="${registrarUrl(res.domain)}" target="_blank" onclick="trackClick('register_click', currentLang === 'fr' ? 'ionos' : 'namecheap', currentLang, '${res.domain}')">${i18n[currentLang].register}</a>
             `;
             resultsEl.appendChild(row);
             libresFound.push(res.domain);
@@ -1178,8 +1187,28 @@
     }
   }
 
-  function namecheapUrl(domain) {
-    return `https://www.namecheap.com/domains/registration/results/?domain=${domain}`;
+  function registrarUrl(domain) {
+    if (currentLang === 'fr') {
+      // IONOS FR — remplace IONOS_AFFILIATE_ID par ton ID une fois obtenu
+      return `https://www.ionos.fr/domaines/enregistrement-domaine?domaincheckInput=${domain}`;
+    } else {
+      // Namecheap EN — remplace par ton lien affilié une fois obtenu
+      return `https://www.namecheap.com/domains/registration/results/?domain=${domain}`;
+    }
+  }
+
+  function trackClick(eventName, registrar, lang, domain) {
+    try {
+      if (typeof gtag === 'function') {
+        gtag('event', eventName, {
+          registrar: registrar,
+          language: lang,
+          domain_name: domain || '',
+          event_category: 'engagement'
+        });
+      }
+      console.log('[BingeNaming]', eventName, { registrar, lang, domain });
+    } catch(e) {}
   }
 
   function clearResults() {
@@ -1198,6 +1227,7 @@
     const btn = document.getElementById('checkBtn');
     btn.disabled = true;
     libresFound = [];
+    trackClick('manual_check', 'none', currentLang, '');
 
     const resultsEl = document.getElementById('results');
     resultsEl.innerHTML = '';
@@ -1231,7 +1261,7 @@
         row.innerHTML = `
           <span class="domain-name">${res.domain}</span>
           <span class="badge-libre">${i18n[currentLang].available.toLowerCase()}</span>
-          <a class="btn-register" href="${namecheapUrl(res.domain)}" target="_blank">${i18n[currentLang].register}</a>
+          <a class="btn-register" href="${registrarUrl(res.domain)}" target="_blank" onclick="trackClick('register_click', currentLang === 'fr' ? 'ionos' : 'namecheap', currentLang, '${res.domain}')">${i18n[currentLang].register}</a>
         `;
         resultsEl.appendChild(row);
         libresFound.push(res.domain);
