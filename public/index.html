@@ -768,7 +768,7 @@
 
     <div class="cta-block">
       <p data-i18n="cta_text"><strong>Vous avez trouvé votre nom.</strong> Et si le plus dur n'était pas de trouver un nom, mais de construire ce qui va avec — le positionnement, l'offre, la communication ? C'est exactement ce sur quoi nous travaillons.</p>
-      <a href="mailto:hello@bingenaming.com" class="cta-btn" data-i18n="cta_btn">Parler à un expert →</a>
+      <button onclick="openContact()" class="cta-btn" data-i18n="cta_btn">Parler à un expert →</button>
     </div>
   </div>
 
@@ -847,6 +847,11 @@
       disclaimer_on: 'sur', disclaimer_or: 'ou',
       cta_text: '<strong>Vous avez trouvé votre nom.</strong> Et si le plus dur n\'était pas de trouver un nom, mais de construire ce qui va avec — le positionnement, l\'offre, la communication ? C\'est exactement ce sur quoi nous travaillons.',
       cta_btn: 'Parler à un expert →',
+      contact_title: 'Parlons de votre projet',
+      contact_subtitle: 'Laissez-nous votre email, nous vous recontactons rapidement.',
+      contact_send: 'Envoyer →',
+      contact_success_title: 'Message envoyé !',
+      contact_success_body: 'Nous vous répondons sous 24h.',
       affiliate_notice: '🔗 Les liens "Enregistrer sur Namecheap" sont des liens affiliés — BingeNaming perçoit une commission si vous achetez via ces liens, sans coût supplémentaire pour vous.',
       footer_dns: 'Vérifié via Cloudflare DNS — aucune donnée stockée',
       gen_remaining: (n) => `${n} génération${n>1?'s':''} gratuite${n>1?'s':''} restante${n>1?'s':''}`,
@@ -911,6 +916,11 @@
       disclaimer_on: 'on', disclaimer_or: 'or',
       cta_text: '<strong>You found your name.</strong> What if the hard part wasn\'t finding a name, but building everything around it — positioning, offer, communication? That\'s exactly what we work on.',
       cta_btn: 'Talk to an expert →',
+      contact_title: 'Let\'s talk about your project',
+      contact_subtitle: 'Leave your email, we\'ll get back to you quickly.',
+      contact_send: 'Send →',
+      contact_success_title: 'Message sent!',
+      contact_success_body: 'We\'ll reply within 24h.',
       affiliate_notice: '🔗 "Register on Namecheap" links are affiliate links — BingeNaming earns a commission if you purchase through these links, at no extra cost to you.',
       footer_dns: 'Checked via Cloudflare DNS — no data stored',
       gen_remaining: (n) => `${n} free generation${n>1?'s':''} remaining`,
@@ -1413,6 +1423,64 @@
 
   updateCount();
   setLang(currentLang);
+
+  function openContact() {
+    const m = document.getElementById('contactModal');
+    m.style.display = 'flex';
+    document.getElementById('contactSuccess').style.display = 'none';
+    document.getElementById('contactForm').style.display = 'block';
+    document.getElementById('contactForm').reset();
+  }
+
+  function closeContact() {
+    document.getElementById('contactModal').style.display = 'none';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('contactForm');
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = new FormData(form);
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: data,
+          headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+          form.style.display = 'none';
+          document.getElementById('contactSuccess').style.display = 'block';
+          setTimeout(closeContact, 3000);
+        }
+      });
+    }
+
+    document.getElementById('contactModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('contactModal')) closeContact();
+    });
+  });
 </script>
+
+<!-- MODAL CONTACT -->
+<div id="contactModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:var(--surface); border:1px solid var(--border2); border-radius:16px; padding:32px; max-width:420px; width:90%; position:relative;">
+    <button onclick="closeContact()" style="position:absolute; top:16px; right:16px; background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer;">✕</button>
+    <h3 style="margin:0 0 8px; font-size:18px;" data-i18n="contact_title">Parlons de votre projet</h3>
+    <p style="font-size:13px; color:var(--muted); margin:0 0 20px;" data-i18n="contact_subtitle">Laissez-nous votre email, nous vous recontactons rapidement.</p>
+    <form id="contactForm" action="https://formspree.io/f/mojydawr" method="POST">
+      <input type="email" name="email" required placeholder="votre@email.com"
+        style="width:100%; box-sizing:border-box; padding:10px 14px; background:var(--bg); border:1px solid var(--border2); border-radius:8px; color:var(--text); font-size:14px; margin-bottom:12px; font-family:inherit;">
+      <textarea name="message" placeholder="Votre message (optionnel)" rows="3"
+        style="width:100%; box-sizing:border-box; padding:10px 14px; background:var(--bg); border:1px solid var(--border2); border-radius:8px; color:var(--text); font-size:14px; margin-bottom:16px; font-family:inherit; resize:vertical;"></textarea>
+      <button type="submit" style="width:100%; padding:12px; background:var(--accent); color:#000; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;" data-i18n="contact_send">Envoyer →</button>
+    </form>
+    <div id="contactSuccess" style="display:none; text-align:center; padding:20px 0;">
+      <p style="font-size:24px; margin:0 0 8px;">✅</p>
+      <p style="font-size:15px; font-weight:500; margin:0 0 4px;" data-i18n="contact_success_title">Message envoyé !</p>
+      <p style="font-size:13px; color:var(--muted);" data-i18n="contact_success_body">Nous vous répondons sous 24h.</p>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
