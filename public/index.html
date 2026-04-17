@@ -1189,8 +1189,9 @@
 
   function registrarUrl(domain) {
     // Namecheap — seul affilié actif (FR + EN)
-    // IONOS FR sera ajouté dès validation de l'affiliation
-    return `https://namecheap.pxf.io/rEGyOd?url=https://www.namecheap.com/domains/registration/results/?domain=${domain}`;
+    // Deep link Impact : encode l'URL de destination avec le domaine pré-rempli
+    const dest = encodeURIComponent(`https://www.namecheap.com/domains/registration/results/?domain=${domain}`);
+    return `https://namecheap.pxf.io/rEGyOd?subId1=bingenaming&u=${dest}`;
   }
 
   function registrarName() {
