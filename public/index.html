@@ -1188,17 +1188,13 @@
   }
 
   function registrarUrl(domain) {
-    if (currentLang === 'fr') {
-      // IONOS FR — lien affilié à ajouter quand disponible
-      return `https://www.ionos.fr/domaines/enregistrement-domaine?domaincheckInput=${domain}`;
-    } else {
-      // Namecheap EN — lien affilié Impact avec ID rEGyOd
-      return `https://namecheap.pxf.io/rEGyOd?url=https://www.namecheap.com/domains/registration/results/?domain=${domain}`;
-    }
+    // Namecheap — seul affilié actif (FR + EN)
+    // IONOS FR sera ajouté dès validation de l'affiliation
+    return `https://namecheap.pxf.io/rEGyOd?url=https://www.namecheap.com/domains/registration/results/?domain=${domain}`;
   }
 
   function registrarName() {
-    return currentLang === 'fr' ? 'IONOS' : 'Namecheap';
+    return 'Namecheap';
   }
 
   function trackClick(eventName, registrar, lang, domain) {
